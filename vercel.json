@@ -1,9 +1,58 @@
 {
-  "version": 2,
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "src": "/admin", "dest": "/admin.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "express"
+    },
+    "client": {
+      "root": "client",
+      "framework": "vite"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/admin(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/admin-login",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/storefront(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/legacy(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/react(.*)",
+      "destination": {
+        "service": "client"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
   ],
   "headers": [
     {
