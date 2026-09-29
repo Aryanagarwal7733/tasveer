@@ -7,6 +7,9 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/tasvee
 let isConnected = false;
 
 async function connectDB() {
+  if (isConnected || mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
   try {
     const conn = await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
@@ -14,6 +17,7 @@ async function connectDB() {
     isConnected = true;
     console.log(`[MongoDB] Connected successfully to host: ${conn.connection.host}, database: ${conn.connection.name}`);
     await autoSeedInitialData();
+    return conn;
   } catch (error) {
     console.error(`[MongoDB] Connection warning/error: ${error.message}`);
     console.log('[MongoDB] Running in resilience mode: Local memory/file fallback will handle requests if MongoDB is offline.');

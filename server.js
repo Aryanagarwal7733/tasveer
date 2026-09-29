@@ -9,8 +9,10 @@ const apiRoutes = require('./routes/apiRoutes');
 const app = express();
 const PORT = process.env.PORT || 8085;
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB (for standalone server mode)
+if (require.main === module) {
+  connectDB();
+}
 
 // CORS Middleware
 app.use(cors({
@@ -127,16 +129,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ status: 'error', message: err.message || 'Internal Server Error' });
 });
 
-// Start Server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n======================================================`);
-  console.log(`🚀 [Tasveer MERN Stack Enterprise Server Live]`);
-  console.log(`🌐 Local URL:    http://localhost:${PORT}`);
-  console.log(`🌐 Network URL:  http://127.0.0.1:${PORT}`);
-  console.log(`📊 Admin Portal: http://localhost:${PORT}/admin`);
-  const dbMasked = (process.env.MONGODB_URI || '').replace(/:([^@]+)@/, ':****@');
-  console.log(`🗄️  Database:     MongoDB on ${dbMasked || 'mongodb://127.0.0.1:27017/tasveer_studio'}`);
-  console.log(`======================================================\n`);
-});
+// Start Server if run directly
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n======================================================`);
+    console.log(`🚀 [Tasveer MERN Stack Enterprise Server Live]`);
+    console.log(`🌐 Local URL:    http://localhost:${PORT}`);
+    console.log(`🌐 Network URL:  http://127.0.0.1:${PORT}`);
+    console.log(`📊 Admin Portal: http://localhost:${PORT}/admin`);
+    const dbMasked = (process.env.MONGODB_URI || '').replace(/:([^@]+)@/, ':****@');
+    console.log(`🗄️  Database:     MongoDB on ${dbMasked || 'mongodb://127.0.0.1:27017/tasveer_studio'}`);
+    console.log(`======================================================\n`);
+  });
+}
 
 module.exports = app;

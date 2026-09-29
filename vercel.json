@@ -1,57 +1,41 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "app": {
-      "root": ".",
-      "framework": "express"
-    },
-    "client": {
-      "root": "client",
-      "framework": "vite"
-    }
-  },
+  "version": 2,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "source": "/api",
+      "destination": "/api/index.js"
     },
     {
-      "source": "/admin(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin.html"
     },
     {
       "source": "/admin-login",
-      "destination": {
-        "service": "app"
-      }
+      "destination": "/admin-login.html"
     },
     {
-      "source": "/storefront(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "source": "/storefront",
+      "destination": "/index.html"
     },
     {
-      "source": "/legacy(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "source": "/legacy",
+      "destination": "/index.html"
     },
     {
-      "source": "/react(.*)",
-      "destination": {
-        "service": "client"
-      }
+      "source": "/react",
+      "destination": "/react-storefront.html"
     },
     {
-      "source": "/(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "source": "/react-storefront",
+      "destination": "/react-storefront.html"
     }
   ],
   "headers": [
@@ -59,12 +43,16 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-src 'self' https:;"
-        },
-        {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With"
         }
       ]
     }

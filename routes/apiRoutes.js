@@ -706,7 +706,9 @@ async function handlePhotoUpload(req, res) {
     // 1. Save local backup to recovered_user_photos directory
     let localSavedPath = null;
     try {
-      const uploadDir = path.join(__dirname, '..', 'recovered_user_photos');
+      const uploadDir = process.env.VERCEL
+        ? path.join(require('os').tmpdir(), 'recovered_user_photos')
+        : path.join(__dirname, '..', 'recovered_user_photos');
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }

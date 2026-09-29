@@ -3,9 +3,16 @@ const fs = require('fs');
 const path = require('path');
 
 // Ensure email logs directory exists for local backups & dev preview
-const EMAIL_LOGS_DIR = path.join(__dirname, '..', 'logs', 'emails');
-if (!fs.existsSync(EMAIL_LOGS_DIR)) {
-  fs.mkdirSync(EMAIL_LOGS_DIR, { recursive: true });
+const EMAIL_LOGS_DIR = process.env.VERCEL
+  ? path.join(require('os').tmpdir(), 'logs', 'emails')
+  : path.join(__dirname, '..', 'logs', 'emails');
+
+try {
+  if (!fs.existsSync(EMAIL_LOGS_DIR)) {
+    fs.mkdirSync(EMAIL_LOGS_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Silent fallback for read-only serverless environments
 }
 
 /**

@@ -1,7 +1,28 @@
-db.json
+# Development & Environment
+.env
+.env.*
+*.log
+logs/
+node_modules
+client/node_modules
+
+# Python Artifacts & Backups
 __pycache__
 *.pyc
 *.pyo
-node_modules
-*.log
-.env
+*.py
+*.exe
+*.bat
+scripts/
+tests/
+scratch/
+recovered_user_photos/
+
+# Backup HTML files
+admin_backup_original.html
+admin_legacy_backup.html
+admin_old_backup.html
+index_old_backup.html
+ai_studio_code.html
+test-store.html
+test.html
