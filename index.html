@@ -1224,10 +1224,11 @@
             <div>
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">Customer Care</h4>
                 <ul class="space-y-2.5 text-xs text-zinc-400">
-                    <li><span class="hover:text-white transition cursor-pointer">Shipping & Crating Policy</span></li>
-                    <li><span class="hover:text-white transition cursor-pointer">Returns & Replacement</span></li>
-                    <li><span class="hover:text-white transition cursor-pointer">Privacy & Image Safety</span></li>
-                    <li><span class="hover:text-white transition cursor-pointer">Terms of Service</span></li>
+                    <li><button type="button" onclick="openCareModal('shipping')" class="hover:text-white transition cursor-pointer text-left">Shipping & Crating Policy</button></li>
+                    <li><button type="button" onclick="openCareModal('returns')" class="hover:text-white transition cursor-pointer text-left">Returns & Replacement</button></li>
+                    <li><button type="button" onclick="openCareModal('privacy')" class="hover:text-white transition cursor-pointer text-left">Privacy & Image Safety</button></li>
+                    <li><button type="button" onclick="openCareModal('terms')" class="hover:text-white transition cursor-pointer text-left">Terms of Service</button></li>
+                    <li><a href="https://wa.me/917231900124?text=Hello%20Tasveer%20Customer%20Care%2C%20I%20need%20help%20with%20my%20order." target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 transition inline-flex items-center gap-1.5"><i class="fab fa-whatsapp"></i> WhatsApp Support</a></li>
                 </ul>
             </div>
 
@@ -1835,6 +1836,21 @@
             <div id="tracker-result-box" class="space-y-4" style="display:none;">
                 <!-- Result dynamically rendered -->
             </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER CARE MODAL -->
+    <div id="care-modal" class="tasveer-modal max-w-[560px]">
+        <div class="p-6 sm:p-8 relative">
+            <button onclick="closeAllModals()" class="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 text-xl cursor-pointer" aria-label="Close customer care dialog">
+                <i class="fas fa-times"></i>
+            </button>
+            <span class="text-xs font-semibold uppercase tracking-widest text-amber-700 block mb-1">Customer Care</span>
+            <h3 id="care-modal-title" class="text-2xl font-serif font-bold text-zinc-900 mb-4">How can we help?</h3>
+            <div id="care-modal-content" class="text-sm text-zinc-600 leading-relaxed space-y-3"></div>
+            <a href="https://wa.me/917231900124?text=Hello%20Tasveer%20Customer%20Care%2C%20I%20need%20help%20with%20my%20order." target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">
+                <i class="fab fa-whatsapp text-lg"></i> Contact Customer Care
+            </a>
         </div>
     </div>
 
@@ -3353,6 +3369,46 @@
         function openTracker() {
             closeAllModals();
             document.getElementById('tracker-modal').classList.add('open');
+            document.getElementById('modal-backdrop').classList.add('open');
+        }
+
+        function openCareModal(topic) {
+            const content = {
+                shipping: {
+                    title: 'Shipping & Crating Policy',
+                    body: [
+                        'Every framed order is protected with reinforced foam, corner guards, and moisture-resistant outer packaging.',
+                        'Insured delivery is free across India. Most orders leave the studio within 3-7 business days, depending on the product and proof approval.'
+                    ]
+                },
+                returns: {
+                    title: 'Returns & Replacement',
+                    body: [
+                        'If your order arrives damaged, send photos of the package and artwork to Customer Care within 48 hours of delivery.',
+                        'We will arrange a free replacement or reprint after review. Custom-made items cannot be returned for a change of mind after production begins.'
+                    ]
+                },
+                privacy: {
+                    title: 'Privacy & Image Safety',
+                    body: [
+                        'Uploaded images are used only to create and fulfil your order. We do not sell or publish customer photos.',
+                        'Order details are shared only with the delivery and payment services needed to complete your purchase.'
+                    ]
+                },
+                terms: {
+                    title: 'Terms of Service',
+                    body: [
+                        'By placing an order, you confirm that you own or have permission to print the submitted images.',
+                        'Production begins after payment and, where applicable, approval of the digital proof. Prices, delivery timelines, and product specifications may vary by order.'
+                    ]
+                }
+            }[topic] || null;
+
+            if (!content) return;
+            closeAllModals();
+            document.getElementById('care-modal-title').textContent = content.title;
+            document.getElementById('care-modal-content').innerHTML = content.body.map(paragraph => `<p>${paragraph}</p>`).join('');
+            document.getElementById('care-modal').classList.add('open');
             document.getElementById('modal-backdrop').classList.add('open');
         }
 
