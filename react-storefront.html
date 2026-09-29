@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasveer by Prince Studio — Fine-Art Photo Printing & Bespoke Framing (React)</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+  
+  <!-- Google Fonts: Inter & Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for UI icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Exact Stylesheet from tasviir.in -->
+  <link rel="stylesheet" href="tasviir_exact.css">
+
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --font-inter: 'Inter', sans-serif;
+      --font-playfair: 'Playfair Display', Georgia, serif;
+    }
+    body {
+      font-family: var(--font-inter);
+      color: #1a1a1a;
+      background-color: #fafaf8;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .font-serif {
+      font-family: var(--font-playfair);
+    }
+    .frame-preview-teak { border: 16px solid #5c3a21; box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 12px 28px rgba(0,0,0,0.25); }
+    .frame-preview-gold { border: 16px solid #b8860b; box-shadow: inset 0 0 8px rgba(0,0,0,0.4), 0 12px 28px rgba(184,134,11,0.25); }
+    .frame-preview-walnut { border: 16px solid #3b2219; box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 12px 28px rgba(0,0,0,0.25); }
+    .frame-preview-black { border: 16px solid #18181b; box-shadow: inset 0 0 10px rgba(0,0,0,0.4), 0 12px 28px rgba(0,0,0,0.25); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const API_BASE = '/api';
+
+    function TasveerLiveApp() {
+      const [products, setProducts] = useState([]);
+      const [selectedCat, setSelectedCat] = useState('all');
+      
+      // Customizer Modal State
+      const [customizerProduct, setCustomizerProduct] = useState(null);
+      const [customSize, setCustomSize] = useState('8x12');
+      const [customBasePrice, setCustomBasePrice] = useState(499);
+      const [customFrame, setCustomFrame] = useState('black');
+      const [customMatting, setCustomMatting] = useState(16);
+      const [uploadedPhoto, setUploadedPhoto] = useState(null);
+
+      // Cart State
+      const [cart, setCart] = useState(() => {
+        try {
+          const s = localStorage.getItem('tasveer_mern_cart');
+          return s ? JSON.parse(s) : [];
+        } catch (e) { return []; }
+      });
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [couponCode, setCouponCode] = useState('');
+      const [activeDiscount, setActiveDiscount] = useState(0);
+      const [couponMsg, setCouponMsg] = useState('');
+
+      // Checkout State
+      const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+      const [customer, setCustomer] = useState({
+        name: '', phone: '', email: '', address: '', city: 'Sawai Madhopur', pincode: '322001', paymentMethod: 'UPI'
+      });
+
+      // Tracker State
+      const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+      const [trackQuery, setTrackQuery] = useState('');
+      const [trackedOrder, setTrackedOrder] = useState(null);
+
+      useEffect(() => {
+        localStorage.setItem('tasveer_mern_cart', JSON.stringify(cart));
+      }, [cart]);
+
+      useEffect(() => {
+        fetch(`${API_BASE}/products`)
+          .then(r => r.json())
+          .then(data => setProducts(data))
+          .catch(console.error);
+      }, []);
+
+      function openCustomizer(prod = null) {
+        if (prod) {
+          setCustomizerProduct(prod);
+          setCustomBasePrice(Number(prod.price || prod.basePrice || 499));
+        } else {
+          setCustomizerProduct(products[0] || { id: 'custom', title: 'Bespoke Custom Frame', price: 499 });
+          setCustomBasePrice(499);
+        }
+      }
+
+      function handlePhotoUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => setUploadedPhoto(ev.target.result);
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function getCalculatedPrice() {
+        let p = customBasePrice;
+        if (customSize === '12x18') p = 799;
+        if (customSize === '16x24') p = 1299;
+        if (customFrame === 'gold') p += 250;
+        if (customFrame === 'walnut') p += 150;
+        if (customMatting > 0) p += 80;
+        return p;
+      }
+
+      function quickAdd(prod) {
+        const item = {
+          cartId: 'item_' + Date.now(),
+          productId: prod.id,
+          title: prod.title || prod.name,
+          price: Number(prod.price || prod.basePrice || 499),
+          image: prod.image || 'https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=800&q=80',
+          size: '12x18 inch',
+          frame: 'Matte Gallery Black',
+          quantity: 1
+        };
+        setCart(prev => [item, ...prev]);
+        setIsCartOpen(true);
+      }
+
+      function addCustomizedToCart() {
+        const item = {
+          cartId: 'item_' + Date.now(),
+          productId: customizerProduct ? customizerProduct.id : 'custom',
+          title: customizerProduct ? (customizerProduct.title || customizerProduct.name) : 'Bespoke Custom Frame',
+          price: getCalculatedPrice(),
+          image: uploadedPhoto || (customizerProduct && customizerProduct.image) || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+          size: `${customSize} inch`,
+          frame: customFrame === 'black' ? 'Matte Gallery Black' : (customFrame === 'teak' ? 'Italian Teak' : (customFrame === 'gold' ? 'Royal Gold' : 'Walnut Dark')),
+          matting: `${customMatting}mm Acid-Free Mat`,
+          quantity: 1
+        };
+        setCart(prev => [item, ...prev]);
+        setCustomizerProduct(null);
+        setIsCartOpen(true);
+      }
+
+      const subtotal = cart.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+      const finalTotal = Math.max(0, subtotal - activeDiscount);
+
+      async function applyCoupon() {
+        try {
+          const res = await fetch(`${API_BASE}/coupons`);
+          if (res.ok) {
+            const list = await res.json();
+            const found = list.find(c => c.code.toUpperCase() === couponCode.trim().toUpperCase() && c.isActive !== false);
+            if (found) {
+              const disc = found.discountType === 'percent' ? Math.round((subtotal * found.value) / 100) : found.value;
+              setActiveDiscount(disc);
+              setCouponMsg(`✓ Saved ₹${disc}`);
+            } else {
+              setCouponMsg('✕ Invalid coupon code');
+            }
+          }
+        } catch (e) {
+          setCouponMsg('Error checking coupon');
+        }
+      }
+
+      async function handleOrderSubmit(e) {
+        e.preventDefault();
+        const payload = {
+          id: 'ORD-' + Date.now().toString().slice(-6),
+          orderNumber: 'TSV-' + Math.floor(100000 + Math.random() * 900000),
+          customerName: customer.name,
+          customerPhone: customer.phone,
+          customerEmail: customer.email || 'customer@tasviir.in',
+          shippingAddress: { address: customer.address, city: customer.city, pincode: customer.pincode },
+          items: cart,
+          subtotal: subtotal,
+          discount: activeDiscount,
+          shipping: 0,
+          totalAmount: finalTotal,
+          couponApplied: couponCode,
+          paymentMethod: customer.paymentMethod,
+          paymentStatus: customer.paymentMethod === 'UPI' ? 'Pending Soft-Proof' : 'COD Confirmed',
+          orderStatus: 'Order Placed',
+          trackingNumber: 'TRK-' + Math.floor(10000 + Math.random() * 90000)
+        };
+
+        try {
+          const res = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            setCart([]);
+            setIsCheckoutOpen(false);
+            alert(`🎉 Order Placed Successfully!\nOrder ID: ${payload.orderNumber}\nSaved directly into MongoDB.`);
+          }
+        } catch (err) {
+          alert('Network error connecting to MongoDB backend');
+        }
+      }
+
+      async function trackOrder(e) {
+        e.preventDefault();
+        try {
+          const res = await fetch(`${API_BASE}/orders`);
+          if (res.ok) {
+            const list = await res.json();
+            const q = trackQuery.trim().toLowerCase();
+            const found = list.find(o => 
+              (o.id && o.id.toLowerCase() === q) || 
+              (o.orderNumber && o.orderNumber.toLowerCase() === q) || 
+              (o.customerPhone && o.customerPhone.includes(q))
+            );
+            setTrackedOrder(found || null);
+          }
+        } catch (e) {}
+      }
+
+      const filtered = selectedCat === 'all' ? products : products.filter(p => p.category === selectedCat);
+
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Top Announcement */}
+          <div className="bg-zinc-900 text-zinc-100 text-xs py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
+            <span>✨ Studio Quality Prints Starting @ ₹19 | WhatsApp Fast Dispatch</span>
+          </div>
+
+          {/* Navigation Bar */}
+          <header className="sticky top-0 z-40 w-full bg-white border-b border-zinc-100 transition-all">
+            <div className="max-w-7xl mx-auto h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+              
+              <a className="flex flex-col items-start group" href="/">
+                <span className="font-serif text-2xl font-bold tracking-tight text-zinc-900 group-hover:text-amber-800 transition">TASVEER</span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 -mt-1 font-medium">by Prince Studio</span>
+              </a>
+
+              <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-zinc-700">
+                <button onClick={() => openCustomizer()} className="flex items-center gap-1.5 text-amber-700 hover:text-amber-800 font-semibold bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200 transition cursor-pointer">
+                  <i className="fas fa-sparkles text-xs"></i>
+                  <span>Frame Your Photo</span>
+                </button>
+                <a className="hover:text-zinc-900 transition" href="#best-sellers" onClick={() => setSelectedCat('all')}>All Collections</a>
+                <a className="hover:text-zinc-900 transition" href="#best-sellers" onClick={() => setSelectedCat('cat_canvas_prints')}>Canvas Wraps</a>
+                <a className="hover:text-zinc-900 transition" href="#best-sellers" onClick={() => setSelectedCat('cat_photo_frames')}>Acrylic Prints</a>
+                <a className="hover:text-zinc-900 transition" href="#best-sellers" onClick={() => setSelectedCat('cat_photo_prints')}>Tabletop Frames</a>
+                <a className="hover:text-zinc-900 transition" href="#how-it-works">Studio Story</a>
+              </nav>
+
+              <div className="flex items-center gap-3">
+                <button onClick={() => setIsTrackerOpen(true)} className="text-xs font-semibold text-zinc-700 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition flex items-center gap-1.5 cursor-pointer">
+                  <i className="fas fa-truck-fast text-amber-700"></i> Track
+                </button>
+                <a href="/admin" className="p-2 text-zinc-600 hover:text-zinc-900 rounded-full" title="Master Admin">
+                  <i className="fas fa-user-shield text-base"></i>
+                </a>
+                <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-zinc-800 hover:text-zinc-900 rounded-full cursor-pointer">
+                  <i className="fas fa-shopping-bag text-lg"></i>
+                  {cart.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-amber-700 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      {cart.reduce((a, b) => a + b.quantity, 0)}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+            </div>
+          </header>
+
+          {/* Hero Section */}
+          <section className="relative min-h-[580px] md:min-h-[640px] bg-[#F5F5F0] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-16">
+            <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <div className="lg:col-span-7 flex flex-col items-start">
+                <div className="inline-flex items-center gap-2 bg-white/90 px-3.5 py-1.5 rounded-full border border-zinc-200 text-xs font-semibold text-amber-900 mb-6 shadow-sm">
+                  <i className="fas fa-sparkles text-amber-600"></i>
+                  <span>India's Premier Fine-Art Framing Studio</span>
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 tracking-tight leading-[1.15] mb-6">
+                  Turn Your Cherished Moments Into <span className="italic text-amber-900 font-normal">Museum-Grade</span> Wall Art.
+                </h1>
+
+                <p className="text-base sm:text-lg text-zinc-600 max-w-xl font-normal leading-relaxed mb-8">
+                  Upload your photos in seconds. Choose from hand-milled solid wood frames, gallery canvas wraps, and optical acrylics—delivered safely to your doorstep, ready to hang.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+                  <button onClick={() => openCustomizer()} className="inline-flex items-center justify-center rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 h-14 px-8 font-semibold tracking-wide w-full sm:w-auto gap-3 text-base cursor-pointer">
+                    <i className="fas fa-upload text-sm"></i>
+                    <span>Frame Your Photo</span>
+                    <i className="fas fa-arrow-right text-sm"></i>
+                  </button>
+                  <a href="#best-sellers">
+                    <button className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-transparent text-zinc-900 hover:bg-zinc-100 h-14 px-8 font-semibold tracking-wide w-full sm:w-auto text-base cursor-pointer">
+                      Explore Collections
+                    </button>
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-8 mt-10 pt-8 border-t border-zinc-300/70 text-xs text-zinc-600">
+                  <div>
+                    <span className="block text-xl font-bold font-serif text-zinc-900">100k+</span>
+                    <span>Photos Printed</span>
+                  </div>
+                  <div className="h-8 w-px bg-zinc-300"></div>
+                  <div>
+                    <span className="block text-xl font-bold font-serif text-zinc-900">4.9 ★</span>
+                    <span>Customer Rating</span>
+                  </div>
+                  <div className="h-8 w-px bg-zinc-300"></div>
+                  <div>
+                    <span className="block text-xl font-bold font-serif text-zinc-900">100%</span>
+                    <span>Handcrafted in India</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 relative flex items-center justify-center">
+                <div className="relative w-full max-w-[360px] aspect-[4/5] bg-white p-4 rounded-xl shadow-2xl border-[16px] border-[#18181B]">
+                  <div className="w-full h-full bg-[#F8F8F5] p-4 flex flex-col justify-between shadow-inner">
+                    <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80" alt="Frame" className="w-full h-full object-cover shadow-sm"/>
+                  </div>
+                  <div className="absolute -bottom-5 -left-5 bg-white/95 px-4 py-2.5 rounded-xl shadow-lg border border-zinc-200 flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+                      <i className="fas fa-award"></i>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900">Master Wood Frame</p>
+                      <p className="text-[10px] text-zinc-500">Acid-free 4-ply museum mat</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* How It Works */}
+          <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <span className="text-xs font-semibold uppercase tracking-widest text-amber-700 block mb-2">Seamless 3-Step Process</span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-zinc-900">How Custom Framing Works</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-zinc-200/80 shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-6">
+                  <i className="fas fa-upload text-xl"></i>
+                </div>
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-1">Step 01</span>
+                <h3 className="text-xl font-serif font-bold text-zinc-900 mb-2">Upload Your Photo</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">Upload any phone shot, wedding memory, or portrait. Our studio engine checks resolution and DPI automatically.</p>
+              </div>
+
+              <div className="flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-zinc-200/80 shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-6">
+                  <i className="fas fa-layer-group text-xl"></i>
+                </div>
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-1">Step 02</span>
+                <h3 className="text-xl font-serif font-bold text-zinc-900 mb-2">Customize Frame & Mat</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">Preview real-time mouldings (Matte Black, Oak, Walnut, Gold), pick your mat size, and inspect on realistic living walls.</p>
+              </div>
+
+              <div className="flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-zinc-200/80 shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-6">
+                  <i className="fas fa-truck-fast text-xl"></i>
+                </div>
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-1">Step 03</span>
+                <h3 className="text-xl font-serif font-bold text-zinc-900 mb-2">Delivered Ready to Hang</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">Expertly printed using 12-color archival pigment inks, custom crated, and delivered with all hanging hardware attached.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Categories */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-amber-700 block mb-1">Handcrafted Styles</span>
+                <h2 className="text-3xl sm:text-4xl font-serif font-bold text-zinc-900">Explore Framing Categories</h2>
+              </div>
+              <a className="text-sm font-semibold text-zinc-900 hover:text-amber-800 flex items-center gap-1" href="#best-sellers" onClick={() => setSelectedCat('all')}>
+                <span>View All Collections</span>
+                <i className="fas fa-arrow-right text-xs"></i>
+              </a>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: 'Photo Prints & Lab Sheets', tag: '6 Designs', desc: 'Studio HD Glossy & Archival Matte lab prints.', img: 'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?auto=format&fit=crop&w=800&q=80', cat: 'cat_photo_prints' },
+                { title: 'Ready Made Wall Frames', tag: '5 Designs', desc: 'Pre-framed art prints, devotional frames ready to hang.', img: 'https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=800&q=80', cat: 'cat_photo_frames' },
+                { title: 'Gallery Canvas Wraps', tag: '6 Designs', desc: '380 GSM archival textured canvas stretched over wooden bars.', img: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80', cat: 'cat_canvas_prints' },
+                { title: 'Custom Photo Framing', tag: '8 Designs', desc: 'Upload your memories and customize with solid wood frames.', img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80', cat: 'cat_photo_frames' }
+              ].map((c, i) => (
+                <div key={i} onClick={() => setSelectedCat(c.cat)} className="group relative h-80 rounded-2xl overflow-hidden shadow-sm border border-zinc-200 block cursor-pointer">
+                  <img src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-6 flex flex-col justify-end text-white">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">{c.tag}</span>
+                    <h3 className="text-xl font-serif font-bold mt-1 group-hover:translate-x-1 transition">{c.title}</h3>
+                    <p className="text-xs text-zinc-300 line-clamp-2 mt-1">{c.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Signature Best Sellers */}
+          <section id="best-sellers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-amber-700 block mb-1">Top Customer Choices</span>
+                <h2 className="text-3xl sm:text-4xl font-serif font-bold text-zinc-900">Signature Best Sellers</h2>
+              </div>
+
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                {[
+                  { id: 'all', name: 'All' },
+                  { id: 'cat_photo_frames', name: 'Frames' },
+                  { id: 'cat_canvas_prints', name: 'Canvas' },
+                  { id: 'cat_photo_prints', name: 'Prints' }
+                ].map(p => (
+                  <button 
+                    key={p.id} 
+                    onClick={() => setSelectedCat(p.id)} 
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition ${selectedCat === p.id ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filtered.map(prod => (
+                <div key={prod.id} className="group relative flex flex-col bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-zinc-300">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 block">
+                    <img src={prod.image || 'https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=800&q=80'} alt={prod.title || prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"/>
+                    
+                    {prod.badge && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] border uppercase tracking-wider bg-amber-50 text-amber-900 border-amber-200/80 font-bold">{prod.badge}</span>
+                      </div>
+                    )}
+
+                    <div className="absolute top-3 right-3 z-10 bg-black/70 backdrop-blur-md text-white text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                      <i className="fas fa-sparkles text-amber-400 text-[10px]"></i>
+                      <span>Custom Photo</span>
+                    </div>
+
+                    <div className="absolute bottom-3 inset-x-3 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0">
+                      <button onClick={() => quickAdd(prod)} className="flex-1 bg-zinc-900 text-white text-xs font-semibold py-2.5 px-3 rounded-lg shadow-lg hover:bg-zinc-800 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i className="fas fa-shopping-bag text-xs"></i>
+                        <span>Quick Add</span>
+                      </button>
+                      <button onClick={() => openCustomizer(prod)} className="bg-white text-zinc-900 text-xs font-medium p-2.5 rounded-lg shadow-lg hover:bg-zinc-100 transition cursor-pointer" title="Frame this photo">
+                        <i className="fas fa-crop-alt text-xs"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs text-amber-600 mb-1">
+                        <i className="fas fa-star text-amber-400 text-xs"></i>
+                        <span className="font-semibold text-zinc-800">{prod.rating || 5}</span>
+                        <span className="text-zinc-400">({prod.reviews || 42})</span>
+                      </div>
+                      <h3 className="text-base font-serif font-bold text-zinc-900 line-clamp-1 hover:text-amber-800 transition">{prod.title || prod.name}</h3>
+                      <p className="text-xs text-zinc-500 line-clamp-2 mt-1 font-normal">{prod.desc || 'Handcrafted studio design on archival grade material with lifetime color warranty.'}</p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-zinc-400 block -mb-0.5">Starts at</span>
+                        <span className="text-base font-bold text-zinc-900 font-serif">₹{prod.price || prod.basePrice || 499}</span>
+                      </div>
+                      <button onClick={() => openCustomizer(prod)} className="text-xs font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1 cursor-pointer">
+                        <span>Customize</span>
+                        <i className="fas fa-arrow-right text-[10px]"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Interactive Customizer Modal */}
+          {customizerProduct && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-[820px] w-full max-h-[90vh] overflow-y-auto relative">
+                <button onClick={() => setCustomizerProduct(null)} className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 text-xl cursor-pointer">
+                  <i className="fas fa-times"></i>
+                </button>
+
+                <span className="text-xs font-semibold uppercase tracking-widest text-amber-700 block mb-1">Bespoke Studio Visualizer</span>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900 mb-6">Configure Your Frame</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                  <div className="md:col-span-6 flex flex-col items-center justify-center p-6 bg-[#F5F5F0] rounded-2xl border border-zinc-200">
+                    <div className={`frame-preview-${customFrame} w-[220px] sm:w-[260px] aspect-[4/5] bg-white transition-all duration-300 flex items-center justify-center p-4`} style={{ padding: `${customMatting}px` }}>
+                      <div className="w-full h-full bg-zinc-100 overflow-hidden relative shadow-inner">
+                        <img src={uploadedPhoto || (customizerProduct.image || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80')} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+
+                    <label className="mt-6 inline-flex items-center gap-2 bg-white text-zinc-900 border border-zinc-300 hover:border-zinc-400 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm cursor-pointer transition">
+                      <i className="fas fa-upload text-amber-700"></i>
+                      <span>Upload Your Photo</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                    </label>
+                  </div>
+
+                  <div className="md:col-span-6 space-y-6">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-2">1. Select Frame Size</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['8x12', '12x18', '16x24'].map(sz => (
+                          <button key={sz} onClick={() => setCustomSize(sz)} className={`px-3 py-2 text-xs font-semibold rounded-lg border cursor-pointer ${customSize === sz ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 text-zinc-800'}`}>
+                            {sz} inch
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-2">2. Wooden Moulding</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'black', name: 'Matte Black', col: '#18181b' },
+                          { id: 'teak', name: 'Italian Teak', col: '#5c3a21' },
+                          { id: 'gold', name: 'Royal Gold', col: '#b8860b' },
+                          { id: 'walnut', name: 'Walnut Dark', col: '#3b2219' }
+                        ].map(f => (
+                          <button key={f.id} onClick={() => setCustomFrame(f.id)} className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs font-semibold cursor-pointer ${customFrame === f.id ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 text-zinc-800'}`}>
+                            <span className="w-3.5 h-3.5 rounded-full" style={{ background: f.col }}></span>
+                            <span>{f.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">3. Acid-Free White Mat</label>
+                        <span className="text-xs font-semibold text-amber-800">{customMatting}mm</span>
+                      </div>
+                      <input type="range" min="0" max="32" step="4" value={customMatting} onChange={e => setCustomMatting(Number(e.target.value))} className="w-full accent-zinc-900" />
+                    </div>
+
+                    <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] text-zinc-500 uppercase tracking-wide block">Configured Price</span>
+                        <span className="text-2xl font-bold font-serif text-zinc-900">₹{getCalculatedPrice()}</span>
+                      </div>
+                      <button onClick={addCustomizedToCart} className="bg-zinc-900 text-white font-bold text-xs px-6 py-3 rounded-xl hover:bg-zinc-800 transition flex items-center gap-2 cursor-pointer shadow-md">
+                        <i className="fas fa-shopping-bag"></i> Add Frame to Cart
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* Cart Drawer */}
+          {isCartOpen && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ width: '100%', maxWidth: '440px', background: '#fff', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+                  <h3 className="font-serif text-lg font-bold text-zinc-900">Your Cart ({cart.length})</h3>
+                  <button onClick={() => setIsCartOpen(false)} className="text-zinc-400 hover:text-zinc-900 text-lg cursor-pointer">
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {cart.length === 0 ? (
+                    <div className="text-center py-16 text-zinc-400">
+                      <p className="text-sm">Your cart is currently empty.</p>
+                    </div>
+                  ) : (
+                    cart.map(it => (
+                      <div key={it.cartId} className="flex gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                        <img src={it.image} alt={it.title} className="w-16 h-16 rounded-lg object-cover" />
+                        <div className="flex-1">
+                          <h4 className="text-xs font-bold text-zinc-900">{it.title}</h4>
+                          <p className="text-[11px] text-zinc-500">{it.size} • {it.frame}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs font-bold text-zinc-900">₹{it.price * it.quantity}</span>
+                            <button onClick={() => setCart(cart.filter(i => i.cartId !== it.cartId))} className="text-red-500 text-xs cursor-pointer">
+                              <i className="fas fa-trash-alt"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="p-6 border-t border-zinc-200 bg-white space-y-3">
+                  <div className="flex justify-between text-base font-bold text-zinc-900">
+                    <span>Total</span>
+                    <span className="text-amber-800">₹{finalTotal}</span>
+                  </div>
+                  <button onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} className="w-full bg-zinc-900 text-white text-sm font-bold py-3.5 rounded-xl hover:bg-zinc-800 cursor-pointer">
+                    Proceed to Checkout
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Checkout Modal */}
+          {isCheckoutOpen && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-[500px] w-full relative">
+                <button onClick={() => setIsCheckoutOpen(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 text-xl cursor-pointer">
+                  <i className="fas fa-times"></i>
+                </button>
+                <h3 className="text-2xl font-serif font-bold text-zinc-900 mb-4">Complete Delivery Details</h3>
+                <form onSubmit={handleOrderSubmit} className="space-y-4">
+                  <input required placeholder="Full Name" value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} className="w-full px-3.5 py-2.5 rounded-lg border border-zinc-300 text-sm" />
+                  <input required placeholder="WhatsApp Phone" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} className="w-full px-3.5 py-2.5 rounded-lg border border-zinc-300 text-sm" />
+                  <textarea required placeholder="Delivery Address" value={customer.address} onChange={e => setCustomer({ ...customer, address: e.target.value })} className="w-full px-3.5 py-2.5 rounded-lg border border-zinc-300 text-sm"></textarea>
+                  <button type="submit" className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 cursor-pointer">Place Order in MongoDB (₹{finalTotal})</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <footer className="bg-zinc-900 text-zinc-300 border-t border-zinc-800 py-12 px-4 sm:px-6 lg:px-8 text-center">
+            <p className="font-serif text-2xl font-bold text-white mb-2">TASVEER by Prince Studio</p>
+            <p className="text-xs text-zinc-400">© 2026 Tasveer by Prince Studio. All rights reserved.</p>
+          </footer>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<TasveerLiveApp />);
+  </script>
+</body>
+</html>

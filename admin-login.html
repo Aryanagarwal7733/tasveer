@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Tasveer</title>
+    <style>
+        :root { color-scheme: dark; font-family: Arial, sans-serif; }
+        body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #070a0f; color: #f8fafc; }
+        main { width: min(92vw, 380px); padding: 32px; border: 1px solid #334155; border-radius: 16px; background: #111827; box-shadow: 0 24px 60px rgba(0, 0, 0, .4); }
+        h1 { margin: 0 0 8px; font-size: 24px; }
+        p { margin: 0 0 24px; color: #94a3b8; font-size: 13px; }
+        label { display: block; margin: 16px 0 6px; color: #cbd5e1; font-size: 13px; font-weight: 700; }
+        input { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #475569; border-radius: 8px; background: #070a0f; color: #fff; font: inherit; }
+        button { width: 100%; margin-top: 22px; padding: 12px; border: 0; border-radius: 8px; background: #f59e0b; color: #070a0f; font-weight: 800; cursor: pointer; }
+        #error { min-height: 18px; margin-top: 14px; color: #f87171; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Tasveer Staff Login</h1>
+        <p>Authorized staff credentials are required to access the control panel.</p>
+        <form id="login-form">
+            <label for="username">Username</label>
+            <input id="username" name="username" autocomplete="username" value="admin" required>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <div id="error" role="alert"></div>
+            <button type="submit">Sign in</button>
+        </form>
+    </main>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            const error = document.getElementById('error');
+            error.textContent = '';
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value.trim(),
+                        password: document.getElementById('password').value
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.token) throw new Error(result.message || 'Invalid credentials');
+                localStorage.setItem('tasveer_admin_jwt', result.token);
+                window.location.replace('/admin');
+            } catch (loginError) {
+                error.textContent = loginError.message || 'Unable to sign in';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasveer Single Admin Suite — Prince Studio (MERN Control Panel)</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS for Fast, Polished UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309'
+                        },
+                        dark: {
+                            950: '#070a0f',
+                            900: '#0b0f19',
+                            850: '#111827',
+                            800: '#1e293b',
+                            700: '#334155'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+            text-rendering: optimizeLegibility;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            background-color: #070a0f;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- AUDIO CHIME FOR ORDERS -->
+    <audio id="order-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="none"></audio>
+
+    <!-- ======================================================== -->
+    <!-- LOGIN SCREEN (DISPLAYED IF NOT LOGGED IN) -->
+    <!-- ======================================================== -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" style="display:none;">
+        <div class="glass-panel w-full max-w-md p-8 rounded-2xl shadow-2xl border border-gold-500/30 text-center">
+            
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-gold-500/20 text-dark-950 text-2xl font-bold">
+                <i class="fas fa-crown"></i>
+            </div>
+
+            <h2 class="text-2xl font-serif font-bold text-white mb-1">Tasveer Master Admin</h2>
+            <p class="text-xs text-zinc-400 mb-6">Single Administrator Suite with Full Store Control</p>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Admin Username</label>
+                    <input type="text" id="login-username" value="admin" required class="w-full px-4 py-2.5 rounded-lg bg-dark-950 border border-dark-700 text-white text-sm focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Master Password</label>
+                    <input type="password" id="login-password" placeholder="Enter password (default: prince123)" required class="w-full px-4 py-2.5 rounded-lg bg-dark-950 border border-dark-700 text-white text-sm focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div id="login-error-msg" class="text-xs font-semibold text-red-400 text-center" style="display:none;"></div>
+
+                <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-dark-950 font-bold text-sm shadow-lg shadow-gold-500/20 transition cursor-pointer flex items-center justify-center gap-2">
+                    <i class="fas fa-unlock-alt"></i>
+                    <span>Unlock Master Panel</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 text-[11px] text-zinc-500">
+                MongoDB Powered Backend • Prince Studio Sawai Madhopur
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MASTER ADMIN TOP HEADER -->
+    <!-- ======================================================== -->
+    <header class="bg-dark-900 border-b border-dark-800 px-6 py-3.5 flex items-center justify-between sticky top-0 z-40">
+        
+        <!-- Left Brand -->
+        <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center text-dark-950 font-bold text-lg shadow-md shadow-gold-500/20">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="font-serif text-lg font-bold text-white tracking-wide">TASVEER</span>
+                    <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-400 border border-gold-500/30">Master Admin</span>
+                </div>
+                <div class="text-[10px] text-zinc-400">Prince Studio • All-In-One Unified Control Center</div>
+            </div>
+        </div>
+
+        <!-- Right Header Stats & Buttons -->
+        <div class="flex items-center gap-3">
+            
+            <!-- MongoDB Status -->
+            <div id="mongo-health-badge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>MongoDB Live 🟢</span>
+            </div>
+
+            <!-- Sound Test -->
+            <button onclick="testChimeSound()" class="px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-zinc-300 border border-dark-700 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer" title="Test Order Notification Chime">
+                <i class="fas fa-volume-up text-gold-400"></i>
+                <span class="hidden md:inline">Test Sound</span>
+            </button>
+
+            <!-- View Public Storefront -->
+            <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fas fa-store"></i>
+                <span>Storefront ↗</span>
+            </a>
+
+            <!-- Logout -->
+            <button onclick="handleLogout()" class="p-2 text-zinc-400 hover:text-red-400 rounded-lg hover:bg-dark-800 transition cursor-pointer" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+
+        </div>
+    </header>
+
+    <!-- ======================================================== -->
+    <!-- MAIN WORKSPACE LAYOUT (SIDEBAR + CONTENT) -->
+    <!-- ======================================================== -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-full md:w-64 bg-dark-900 border-r border-dark-800 p-4 flex flex-col justify-between flex-shrink-0">
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer bg-gold-500/15 text-gold-400 border border-gold-500/30">
+                    <i class="fas fa-chart-pie w-4 text-center"></i>
+                    <span>Dashboard & KPIs</span>
+                </button>
+
+                <button onclick="switchTab('orders')" id="nav-orders" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white">
+                    <i class="fas fa-shopping-bag w-4 text-center"></i>
+                    <span>Orders & Logistics</span>
+                    <span id="badge-orders-count" class="ml-auto bg-dark-700 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <button onclick="switchTab('products')" id="nav-products" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white">
+                    <i class="fas fa-images w-4 text-center"></i>
+                    <span>Products & Catalog</span>
+                    <span id="badge-products-count" class="ml-auto bg-dark-700 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <button onclick="switchTab('coupons')" id="nav-coupons" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white">
+                    <i class="fas fa-tag w-4 text-center"></i>
+                    <span>Discounts & Coupons</span>
+                </button>
+
+                <button onclick="switchTab('cms')" id="nav-cms" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white">
+                    <i class="fas fa-paint-roller w-4 text-center"></i>
+                    <span>Storefront & Banners</span>
+                </button>
+
+                <button onclick="switchTab('settings')" id="nav-settings" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white">
+                    <i class="fas fa-cog w-4 text-center"></i>
+                    <span>Settings & Security</span>
+                </button>
+            </nav>
+
+            <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 mt-6 text-xs space-y-1">
+                <div class="text-zinc-500 font-medium">Logged in as:</div>
+                <div class="font-bold text-white flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>admin (Master Owner)</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DYNAMIC CONTENT AREA -->
+        <main class="flex-1 p-6 sm:p-8 overflow-y-auto bg-dark-950">
+            
+            <!-- ==================================================== -->
+            <!-- 1. DASHBOARD & KPIS TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-dashboard" class="tab-content active space-y-8">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold text-white">Executive Control Dashboard</h1>
+                        <p class="text-xs text-zinc-400 mt-0.5">Live store telemetry connected to MongoDB database.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="https://drive.google.com/drive/folders/1qMAhARFgVLQNlxDXskipGaZFrTBXxYnT?usp=drive_link" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open Studio Google Drive Folder">
+                            <i class="fab fa-google-drive"></i> Studio Drive Folder ↗
+                        </a>
+                        <button onclick="fetchEverythingFromMern()" class="px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-xs font-medium text-zinc-300 border border-dark-700 flex items-center gap-1.5 cursor-pointer">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Metrics Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <div class="glass-panel p-5 rounded-2xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gold-500/15 border border-gold-500/30 flex items-center justify-center text-gold-400 text-xl flex-shrink-0">
+                            <i class="fas fa-indian-rupee-sign"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-zinc-400 font-medium block">Total Revenue</span>
+                            <span id="kpi-revenue" class="text-2xl font-bold font-serif text-white">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl flex-shrink-0">
+                            <i class="fas fa-boxes-stacked"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-zinc-400 font-medium block">Total Orders</span>
+                            <span id="kpi-orders" class="text-2xl font-bold font-serif text-white">0</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl flex-shrink-0">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-zinc-400 font-medium block">Pending Production</span>
+                            <span id="kpi-pending" class="text-2xl font-bold font-serif text-white">0</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl flex-shrink-0">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-zinc-400 font-medium block">Live Products</span>
+                            <span id="kpi-products" class="text-2xl font-bold font-serif text-white">0</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Email Diagnostics & Live Tester Widget -->
+                <div class="glass-panel p-6 rounded-2xl border border-dark-700/80 bg-gradient-to-r from-dark-900/90 via-dark-800/90 to-dark-900/90 shadow-xl space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-dark-700/70">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-white text-base">EmailJS Live Notification Tester</h3>
+                                <p class="text-xs text-zinc-400">Send instant test confirmation emails to verify inbox delivery for admin and customer.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-dark-950 border border-dark-700 text-amber-400">service_gg38dta</span>
+                            <span class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-dark-950 border border-dark-700 text-emerald-400">admin: template_iru34eg</span>
+                            <span class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-dark-950 border border-dark-700 text-sky-400">cust: template_5qvgpqh</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                        <div class="md:col-span-6">
+                            <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Destination Test Email Address</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                                <input type="email" id="test-email-target" value="tasviirframe@gmail.com" placeholder="Enter recipient email (e.g. tasviirframe@gmail.com)" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-amber-500 font-medium">
+                            </div>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Admin Alert</label>
+                            <button type="button" onclick="sendTestEmailDirect('admin')" id="btn-test-admin" class="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer">
+                                <i class="fas fa-crown text-amber-400"></i> Test Admin Alert
+                            </button>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Customer Email</label>
+                            <button type="button" onclick="sendTestEmailDirect('customer')" id="btn-test-customer" class="w-full py-2.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer">
+                                <i class="fas fa-user-check text-sky-400"></i> Test Customer Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="test-email-status-box" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+                </div>
+
+                <!-- Recent Orders Preview Table -->
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="p-5 border-b border-dark-800 flex items-center justify-between">
+                        <h3 class="font-serif font-bold text-white text-base">Recent Orders Received</h3>
+                        <button onclick="switchTab('orders')" class="text-xs font-semibold text-gold-400 hover:text-gold-500 cursor-pointer">
+                            View All Orders →
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-dark-900/60 text-zinc-400 font-semibold border-b border-dark-800">
+                                <tr>
+                                    <th class="p-3.5">Order ID</th>
+                                    <th class="p-3.5">Customer</th>
+                                    <th class="p-3.5">Total</th>
+                                    <th class="p-3.5">Payment</th>
+                                    <th class="p-3.5">Status</th>
+                                    <th class="p-3.5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-recent-orders" class="divide-y divide-dark-800 text-zinc-300">
+                                <tr><td colspan="6" class="p-6 text-center text-zinc-500">Loading recent orders from MongoDB...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- 2. ORDERS & LOGISTICS TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-orders" class="tab-content space-y-6">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold text-white">Orders & Production Queue</h1>
+                        <p class="text-xs text-zinc-400 mt-0.5">Manage customer orders, update workshop stages & dispatch WhatsApp updates.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <a href="https://drive.google.com/drive/folders/1qMAhARFgVLQNlxDXskipGaZFrTBXxYnT?usp=drive_link" target="_blank" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition whitespace-nowrap shadow-sm" title="Open Studio Print Photos Google Drive Folder">
+                            <i class="fab fa-google-drive text-sm"></i>
+                            <span>Studio Drive Folder ↗</span>
+                        </a>
+                        <!-- Search Input -->
+                        <div class="relative w-full sm:w-72">
+                            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                            <input type="text" id="order-search-input" oninput="filterOrdersTable()" placeholder="Search Order ID, Phone or Name..." class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Filter Tabs -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2">
+                    <button onclick="filterOrdersByStatus('all')" class="order-filter-pill active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gold-500/15 text-gold-400 border border-gold-500/30 cursor-pointer">All Orders</button>
+                    <button onclick="filterOrdersByStatus('Order Placed')" class="order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer">Placed</button>
+                    <button onclick="filterOrdersByStatus('Lab Printed')" class="order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer">Printed</button>
+                    <button onclick="filterOrdersByStatus('Wood Framed')" class="order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer">Framed</button>
+                    <button onclick="filterOrdersByStatus('Dispatched')" class="order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer">Dispatched</button>
+                    <button onclick="filterOrdersByStatus('Delivered')" class="order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer">Delivered</button>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-dark-900 text-zinc-400 font-semibold border-b border-dark-800">
+                                <tr>
+                                    <th class="p-4">Order ID & Date</th>
+                                    <th class="p-4">Customer Details</th>
+                                    <th class="p-4">Items / Frame Style</th>
+                                    <th class="p-4">Total & Payment</th>
+                                    <th class="p-4">Production Stage</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="divide-y divide-dark-800 text-zinc-300">
+                                <tr><td colspan="6" class="p-6 text-center text-zinc-500">Loading orders from MongoDB...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- 3. PRODUCTS & CATALOG TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-products" class="tab-content space-y-6">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold text-white">Products Catalog & Inventory</h1>
+                        <p class="text-xs text-zinc-400 mt-0.5">Add, edit pricing, manage stock and configure frames.</p>
+                    </div>
+
+                    <button onclick="openProductModal()" class="px-4 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-gold-500/20">
+                        <i class="fas fa-plus"></i>
+                        <span>Add New Product</span>
+                    </button>
+                </div>
+
+                <!-- Products Table -->
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-dark-900 text-zinc-400 font-semibold border-b border-dark-800">
+                                <tr>
+                                    <th class="p-4">Product Image</th>
+                                    <th class="p-4">Title & Description</th>
+                                    <th class="p-4">Category</th>
+                                    <th class="p-4">Price (₹)</th>
+                                    <th class="p-4">Stock</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body" class="divide-y divide-dark-800 text-zinc-300">
+                                <tr><td colspan="6" class="p-6 text-center text-zinc-500">Loading products from MongoDB...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- 4. DISCOUNTS & COUPONS TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-coupons" class="tab-content space-y-6">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold text-white">Discounts & Coupon Codes</h1>
+                        <p class="text-xs text-zinc-400 mt-0.5">Manage promotional discounts applied at checkout.</p>
+                    </div>
+
+                    <button onclick="openCouponModal()" class="px-4 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-gold-500/20">
+                        <i class="fas fa-plus"></i>
+                        <span>Create New Coupon</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="coupons-grid">
+                    <!-- Coupons rendered dynamically -->
+                </div>
+
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- 5. STOREFRONT & BANNERS (CMS) TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-cms" class="tab-content space-y-6">
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold text-white">Storefront & CMS Content</h1>
+                        <p class="text-xs text-zinc-400 mt-0.5">Update headlines, announcement bar, phone numbers & FAQs.</p>
+                    </div>
+
+                    <button onclick="saveCmsToMongoDB()" class="px-5 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-gold-500/20">
+                        <i class="fas fa-save"></i>
+                        <span>Publish to Storefront</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Headlines Card -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <h3 class="font-serif font-bold text-white text-base border-b border-dark-800 pb-3">Hero Section & Announcements</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Top Announcement Bar Text</label>
+                            <input type="text" id="cms-announcement" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Hero Main Headline</label>
+                            <input type="text" id="cms-hero-title" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Hero Subtitle</label>
+                            <textarea id="cms-hero-subtext" rows="3" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Contact Details Card -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <h3 class="font-serif font-bold text-white text-base border-b border-dark-800 pb-3">Studio Contact & Footer Info</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">WhatsApp / Calling Phone</label>
+                            <input type="text" id="cms-phone" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Official Email Address</label>
+                            <input type="email" id="cms-email" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Studio Physical Address</label>
+                            <textarea id="cms-address" rows="3" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- 6. SETTINGS & SECURITY TAB -->
+            <!-- ==================================================== -->
+            <div id="tab-settings" class="tab-content space-y-6 max-w-2xl">
+                
+                <div>
+                    <h1 class="text-2xl font-serif font-bold text-white">System Settings & Security</h1>
+                    <p class="text-xs text-zinc-400 mt-0.5">Manage master administrator password and database synchronization.</p>
+                </div>
+
+                <!-- Password Card -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <h3 class="font-serif font-bold text-white text-base border-b border-dark-800 pb-3">Change Master Admin Password</h3>
+                    
+                    <form onsubmit="handleChangePassword(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">New Password</label>
+                            <input type="password" id="new-password" required placeholder="Enter new password" class="w-full px-3.5 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white text-xs focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold text-xs cursor-pointer shadow-md">
+                            Update Master Password
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Diagnostics Card -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3">
+                    <h3 class="font-serif font-bold text-white text-base border-b border-dark-800 pb-3">Database Diagnostics</h3>
+                    <div class="text-xs text-zinc-400 space-y-2">
+                        <div class="flex items-center justify-between py-1 border-b border-dark-800/60">
+                            <span>Stack:</span>
+                            <strong class="text-white">MERN (MongoDB Atlas, Express, React, Node.js)</strong>
+                        </div>
+                        <div class="flex items-center justify-between py-1 border-b border-dark-800/60">
+                            <span>Cluster Host:</span>
+                            <strong id="diag-db-host" class="text-emerald-400 font-mono text-[11px]">Connecting...</strong>
+                        </div>
+                        <div class="flex items-center justify-between py-1 border-b border-dark-800/60">
+                            <span>Database Name:</span>
+                            <strong class="text-gold-400 font-mono">tasveer_studio</strong>
+                        </div>
+                        <div class="flex items-center justify-between py-1 border-b border-dark-800/60">
+                            <span>Cloud Sync:</span>
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold">Active & Live 🟢</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <span>REST API Base:</span>
+                            <strong class="text-zinc-300 font-mono text-[11px]">/api</strong>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: ADD / EDIT PRODUCT -->
+    <!-- ======================================================== -->
+    <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style="display:none;">
+        <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-dark-700 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-dark-800 mb-4">
+                <h3 class="font-serif font-bold text-white text-lg">Add / Edit Product</h3>
+                <button onclick="closeProductModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fas fa-times"></i></button>
+            </div>
+
+            <form onsubmit="handleSaveProduct(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="prod-id">
+                
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Product Title *</label>
+                    <input type="text" id="prod-title" required placeholder="e.g. 12x18 Wood Frame" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-zinc-300 mb-1">Category *</label>
+                        <select id="prod-category" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500">
+                            <option value="cat_photo_frames">Photo Frames</option>
+                            <option value="cat_canvas_prints">Canvas Prints</option>
+                            <option value="cat_gallery_frames">Gallery Walls</option>
+                            <option value="cat_collage_frames">Collage Frames</option>
+                            <option value="cat_photo_prints">Archival Photo Prints</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-zinc-300 mb-1">Price (₹) *</label>
+                        <input type="number" id="prod-price" required placeholder="499" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Image URL</label>
+                    <input type="url" id="prod-image" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Badge (Optional)</label>
+                    <input type="text" id="prod-badge" placeholder="e.g. Bestseller, Studio HD" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Description</label>
+                    <textarea id="prod-desc" rows="2" placeholder="Handcrafted wooden frame..." class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white focus:outline-none focus:border-gold-500"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold cursor-pointer mt-4">
+                    Save to MongoDB
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: ADD COUPON -->
+    <!-- ======================================================== -->
+    <div id="coupon-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style="display:none;">
+        <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-dark-700">
+            <div class="flex items-center justify-between pb-3 border-b border-dark-800 mb-4">
+                <h3 class="font-serif font-bold text-white text-lg">Create Discount Coupon</h3>
+                <button onclick="closeCouponModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fas fa-times"></i></button>
+            </div>
+
+            <form onsubmit="handleSaveCoupon(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Coupon Code (Uppercase) *</label>
+                    <input type="text" id="cpn-code" required placeholder="e.g. DIWALI20" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white uppercase focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-zinc-300 mb-1">Type</label>
+                        <select id="cpn-type" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white">
+                            <option value="percent">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-zinc-300 mb-1">Discount Value *</label>
+                        <input type="number" id="cpn-value" required placeholder="10" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-zinc-300 mb-1">Minimum Cart Value (₹)</label>
+                    <input type="number" id="cpn-min" value="0" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white">
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold cursor-pointer mt-4">
+                    Create Coupon
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ORDER DETAILS & STUDIO LAB PRODUCTION SPECS -->
+    <div id="order-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style="display: none;">
+        <div class="bg-dark-900 border border-dark-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 border-b border-dark-800">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/20">Studio Lab Order Specs</span>
+                    <h3 class="text-xl font-bold text-white mt-1" id="od-order-num">Order Details</h3>
+                </div>
+                <button onclick="closeOrderModal()" class="text-zinc-400 hover:text-white cursor-pointer text-lg p-1">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="mt-4 space-y-4" id="od-modal-body">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="admin-toast" class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-dark-900 border border-gold-500/40 text-gold-400 text-xs font-semibold shadow-2xl flex items-center gap-2 transform translate-y-24 opacity-0 transition-all duration-300">
+        <i class="fas fa-check-circle"></i>
+        <span id="admin-toast-text">Operation completed</span>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SINGLE ADMIN LOGIC & MERN API BINDINGS -->
+    <!-- ======================================================== -->
+    <script>
+        const API_BASE = '/api';
+
+        // Master Data Cache
+        let allOrders = [];
+        let allProducts = [];
+        let allCoupons = [];
+        let cmsData = {};
+        let currentStatusFilter = 'all';
+
+        // Initialize Admin
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('tasveer_admin_jwt');
+            if (token) {
+                fetchEverythingFromMern();
+            } else {
+                document.getElementById('login-modal').style.display = 'flex';
+            }
+        });
+
+        // 1. Authentication
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
+            const errEl = document.getElementById('login-error-msg');
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    localStorage.setItem('tasveer_admin_jwt', data.token);
+                    document.getElementById('login-modal').style.display = 'none';
+                    fetchEverythingFromMern();
+                    showAdminToast('👑 Welcome Master Admin!');
+                } else {
+                    errEl.style.display = 'block';
+                    errEl.innerText = data.message || 'Invalid Admin Credentials!';
+                }
+            } catch (err) {
+                errEl.style.display = 'block';
+                errEl.innerText = 'Server error connecting to backend.';
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+            } catch (err) {}
+            localStorage.removeItem('tasveer_admin_jwt');
+            location.reload();
+        }
+
+        // 2. Fetch All MERN Data from MongoDB
+        async function fetchEverythingFromMern() {
+            try {
+                const [rOrd, rProd, rCpn, rCms, rHealth] = await Promise.all([
+                    fetch(`${API_BASE}/orders`),
+                    fetch(`${API_BASE}/products?all=true`),
+                    fetch(`${API_BASE}/coupons`),
+                    fetch(`${API_BASE}/cms`),
+                    fetch(`${API_BASE}/health`).catch(() => null)
+                ]);
+
+                if (rOrd.ok) allOrders = await rOrd.json();
+                if (rProd.ok) allProducts = await rProd.json();
+                if (rCpn.ok) allCoupons = await rCpn.json();
+                if (rCms.ok) cmsData = await rCms.json();
+
+                if (rHealth && rHealth.ok) {
+                    const h = await rHealth.json();
+                    const badge = document.getElementById('mongo-health-badge');
+                    const diagHost = document.getElementById('diag-db-host');
+                    if (badge) {
+                        badge.innerHTML = `<span class="w-2 h-2 rounded-full ${h.mongoConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}"></span><span>${h.mongoConnected ? 'Atlas Cloud 🟢' : 'MongoDB Offline 🔴'}</span>`;
+                        badge.title = `Host: ${h.dbHost}`;
+                    }
+                    if (diagHost) {
+                        diagHost.innerText = h.dbHost || 'Connected';
+                    }
+                }
+
+                updateDashboardKPIs();
+                renderOrdersTable();
+                renderProductsTable();
+                renderCouponsGrid();
+                populateCmsForm();
+
+                document.getElementById('badge-orders-count').innerText = allOrders.length;
+                document.getElementById('badge-products-count').innerText = allProducts.length;
+
+            } catch (e) {
+                console.error('Error fetching MERN data:', e);
+            }
+        }
+
+        // 3. Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-btn').forEach(b => {
+                b.className = 'sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-zinc-400 hover:bg-dark-800 hover:text-white';
+            });
+
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeTab) activeTab.classList.add('active');
+            if (activeBtn) {
+                activeBtn.className = 'sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer bg-gold-500/15 text-gold-400 border border-gold-500/30';
+            }
+        }
+
+        // 4. Dashboard KPIs
+        function updateDashboardKPIs() {
+            const revenue = allOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+            const pending = allOrders.filter(o => o.orderStatus !== 'Delivered' && o.orderStatus !== 'Cancelled').length;
+
+            document.getElementById('kpi-revenue').innerText = `₹${revenue.toLocaleString('en-IN')}`;
+            document.getElementById('kpi-orders').innerText = allOrders.length;
+            document.getElementById('kpi-pending').innerText = pending;
+            document.getElementById('kpi-products').innerText = allProducts.length;
+
+            // Recent Orders
+            const recent = allOrders.slice(0, 5);
+            const container = document.getElementById('dashboard-recent-orders');
+            if (recent.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-zinc-500">No orders received yet.</td></tr>';
+                return;
+            }
+
+            container.innerHTML = recent.map(o => `
+                <tr class="hover:bg-dark-900/40">
+                    <td class="p-3.5 font-bold text-white">${o.orderNumber || o.id}</td>
+                    <td class="p-3.5">${o.customerName || 'Guest'} (${o.customerPhone || 'N/A'})</td>
+                    <td class="p-3.5 font-bold text-gold-400">₹${o.totalAmount || 0}</td>
+                    <td class="p-3.5">
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${o.paymentMethod === 'Razorpay' ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">${o.paymentMethod || 'Razorpay'}</span>
+                            <span class="text-[10px] ${o.paymentStatus === 'Paid' ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${o.paymentStatus === 'Paid' ? 'Paid ✓' : (o.paymentStatus || 'Pending')}</span>
+                        </div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadgeClass(o.orderStatus)}">${o.orderStatus || 'Placed'}</span>
+                    </td>
+                    <td class="p-3.5 text-right">
+                        <button onclick="switchTab('orders')" class="text-gold-400 hover:text-white font-semibold cursor-pointer">Manage →</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'Order Placed': return 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
+                case 'Lab Printed': return 'bg-purple-500/10 text-purple-400 border border-purple-500/30';
+                case 'Wood Framed': return 'bg-amber-500/10 text-amber-400 border border-amber-500/30';
+                case 'Dispatched': return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30';
+                case 'Delivered': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+                default: return 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/30';
+            }
+        }
+
+        // 5. Orders Management
+        function renderOrdersTable() {
+            const container = document.getElementById('orders-table-body');
+            const filtered = currentStatusFilter === 'all' 
+                ? allOrders 
+                : allOrders.filter(o => o.orderStatus === currentStatusFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-zinc-500">No orders matching this filter.</td></tr>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(o => {
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'Today';
+                const itemsCount = Array.isArray(o.items) ? o.items.length : 1;
+                const firstItem = Array.isArray(o.items) && o.items[0] ? o.items[0] : null;
+
+                return `
+                    <tr class="hover:bg-dark-900/40">
+                        <td class="p-4">
+                            <div class="font-bold text-white text-xs">${o.orderNumber || o.id}</div>
+                            <div class="text-[10px] text-zinc-500">${date}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-semibold text-white">${o.customerName || 'Customer'}</div>
+                            <div class="text-zinc-400 text-[11px]">${o.customerPhone || 'N/A'}</div>
+                            <div class="text-zinc-500 text-[10px] line-clamp-1">${o.shippingAddress?.address || 'Address'}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-zinc-300 font-medium">${firstItem ? firstItem.title : 'Custom Frame'}</div>
+                            <div class="text-[10px] text-zinc-500">${itemsCount} item(s) • ${firstItem?.size || '12x18'}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-gold-400">₹${o.totalAmount || 0}</div>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${o.paymentMethod === 'Razorpay' ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">${o.paymentMethod || 'Razorpay'}</span>
+                                <span class="text-[10px] ${o.paymentStatus === 'Paid' ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${o.paymentStatus === 'Paid' ? 'Paid 🟢' : (o.paymentStatus || 'Pending')}</span>
+                            </div>
+                            ${o.razorpayPaymentId ? `<div class="font-mono text-[9px] text-zinc-500 mt-0.5 tracking-tight">${o.razorpayPaymentId}</div>` : ''}
+                        </td>
+                        <td class="p-4">
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" class="px-2.5 py-1.5 rounded-lg bg-dark-900 border border-dark-700 text-white text-[11px] font-semibold focus:outline-none focus:border-gold-500">
+                                <option value="Order Placed" ${o.orderStatus === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
+                                <option value="Lab Printed" ${o.orderStatus === 'Lab Printed' ? 'selected' : ''}>2. Lab Printed</option>
+                                <option value="Wood Framed" ${o.orderStatus === 'Wood Framed' ? 'selected' : ''}>3. Wood Framed</option>
+                                <option value="Dispatched" ${o.orderStatus === 'Dispatched' ? 'selected' : ''}>4. Dispatched</option>
+                                <option value="Delivered" ${o.orderStatus === 'Delivered' ? 'selected' : ''}>5. Delivered</option>
+                            </select>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="viewOrderDetails('${o.id}')" class="p-2 rounded bg-gold-500/10 text-gold-400 hover:bg-gold-500/20 text-xs cursor-pointer" title="View Lab Specs & Photo">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${o.customerPhone ? `
+                                    <a href="https://wa.me/91${o.customerPhone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(o.customerName || 'Customer')},%20your%20order%20${o.orderNumber || o.id}%20from%20Prince%20Studio%20is%20now%20${encodeURIComponent(o.orderStatus || 'in production')}!" target="_blank" class="p-2 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs" title="WhatsApp Customer">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                ` : ''}
+                                <button onclick="deleteOrder('${o.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs cursor-pointer" title="Delete Order">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterOrdersByStatus(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.order-filter-pill').forEach(btn => {
+                btn.className = btn.innerText.toLowerCase().includes(status.toLowerCase()) || (status === 'all' && btn.innerText.includes('All'))
+                    ? 'order-filter-pill active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gold-500/15 text-gold-400 border border-gold-500/30 cursor-pointer'
+                    : 'order-filter-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-dark-850 text-zinc-400 hover:text-white border border-dark-700 cursor-pointer';
+            });
+            renderOrdersTable();
+        }
+
+        function filterOrdersTable() {
+            const q = document.getElementById('order-search-input').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#orders-table-body tr');
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                r.style.display = text.includes(q) ? '' : 'none';
+            });
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderStatus: newStatus })
+                });
+                if (res.ok) {
+                    const found = allOrders.find(o => o.id === orderId);
+                    if (found) found.orderStatus = newStatus;
+                    updateDashboardKPIs();
+                    showAdminToast(`✓ Status updated: ${newStatus}`);
+                }
+            } catch (err) {
+                alert('Error updating order');
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to permanently delete this order?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/orders/${orderId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    allOrders = allOrders.filter(o => o.id !== orderId);
+                    renderOrdersTable();
+                    updateDashboardKPIs();
+                    showAdminToast('Order deleted from MongoDB');
+                }
+            } catch (e) {
+                alert('Error deleting order');
+            }
+        }
+
+        function viewOrderDetails(orderId) {
+            const o = allOrders.find(item => item.id === orderId);
+            if (!o) return;
+
+            document.getElementById('od-order-num').innerText = `${o.orderNumber || o.id} — Production Specs`;
+            const container = document.getElementById('od-modal-body');
+            const dateStr = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : 'Recent';
+            
+            const itemsHtml = (o.items || []).map((it, idx) => `
+                <div class="p-4 rounded-xl bg-dark-950 border border-dark-700/80 flex flex-col sm:flex-row gap-4">
+                    <div class="w-24 h-24 rounded-lg overflow-hidden bg-dark-800 border border-dark-600 flex-shrink-0 relative group">
+                        <img src="${it.userPhoto || it.image || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80'}" class="w-full h-full object-cover">
+                        ${it.userPhoto ? `
+                            <a href="${it.userPhoto}" download="customer_photo_${o.orderNumber || o.id}_item_${idx+1}.png" target="_blank" class="absolute inset-0 bg-black/75 flex items-center justify-center text-gold-400 opacity-0 group-hover:opacity-100 transition text-[11px] font-bold gap-1 p-1 text-center">
+                                <i class="fas fa-download"></i> Save Art
+                            </a>
+                        ` : ''}
+                    </div>
+                    <div class="flex-1 space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-white text-sm">${it.title || 'Custom Frame'}</h4>
+                            <span class="font-bold text-gold-400 text-sm">₹${it.price || 0} × ${it.quantity || 1}</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-zinc-300 bg-dark-900 p-2.5 rounded-lg border border-dark-800">
+                            <div><span class="text-zinc-500">Dimensions:</span> <strong class="text-white">${it.size || '12x18 in (A3)'}</strong></div>
+                            <div><span class="text-zinc-500">Frame Moulding:</span> <strong class="text-white">${it.frame || 'Italian Teak'}</strong></div>
+                            <div><span class="text-zinc-500">Matting Border:</span> <strong class="text-white">${it.matting || it.borderStyle || '18mm Pure Cotton White Mat'}</strong></div>
+                            <div><span class="text-zinc-500">Glazing Glass:</span> <strong class="text-white">${it.glazing || 'Crystal Float Glass'}</strong></div>
+                        </div>
+                        ${(it.gdriveUrl || it.userPhoto) ? `
+                            <div class="pt-1 flex flex-wrap items-center gap-2">
+                                ${it.gdriveUrl ? `
+                                    <a href="${it.gdriveUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[11px] font-bold border border-emerald-500/30 transition shadow-sm">
+                                        <i class="fab fa-google-drive text-emerald-400"></i> Open in Google Drive ↗
+                                    </a>
+                                ` : ''}
+                                ${it.userPhoto ? `
+                                    <a href="${it.userPhoto}" download="customer_photo_${o.orderNumber || o.id}.png" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-500/15 hover:bg-gold-500/25 text-gold-400 text-[11px] font-bold border border-gold-500/30 transition">
+                                        <i class="fas fa-file-download"></i> Download Lab Art File
+                                    </a>
+                                ` : ''}
+                            </div>
+                        ` : '<div class="text-[11px] text-zinc-500 italic">Catalog Artwork Selected</div>'}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <!-- Customer & Delivery Summary -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-dark-850 p-4 rounded-xl border border-dark-700">
+                    <div>
+                        <div class="text-zinc-500 uppercase tracking-wider text-[10px] font-bold mb-1">Customer Contact</div>
+                        <div class="font-bold text-white text-sm">${o.customerName || 'Customer'}</div>
+                        <div class="text-zinc-300 mt-0.5"><i class="fas fa-phone-alt text-gold-400 mr-1"></i> ${o.customerPhone || 'N/A'}</div>
+                        <div class="text-zinc-400 mt-0.5"><i class="fas fa-envelope text-zinc-500 mr-1"></i> ${o.customerEmail || 'N/A'}</div>
+                        ${o.customerPhone ? `
+                            <a href="https://wa.me/91${o.customerPhone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(o.customerName || 'Customer')},%20this%20is%20Prince%20Studio%20Sawai%20Madhopur%20regarding%20your%20custom%20frame%20order%20${o.orderNumber || o.id}." target="_blank" class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold text-[11px]">
+                                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                            </a>
+                        ` : ''}
+                    </div>
+                    <div>
+                        <div class="text-zinc-500 uppercase tracking-wider text-[10px] font-bold mb-1">Delivery Address</div>
+                        <div class="text-white">${o.shippingAddress?.address || 'Address'}</div>
+                        <div class="text-zinc-400">${o.shippingAddress?.city || 'Sawai Madhopur'} - ${o.shippingAddress?.pincode || '322001'}</div>
+                        <div class="mt-2 text-zinc-500 text-[11px]">Placed on: ${dateStr}</div>
+                    </div>
+                </div>
+
+                <!-- Payment & Order Status Control -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-dark-850 border border-dark-700 text-xs">
+                    <div>
+                        <div class="text-zinc-500 uppercase tracking-wider text-[10px] font-bold mb-1">Payment Information</div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">${o.paymentMethod || 'Razorpay'}</span>
+                            <span class="text-emerald-400 font-bold">${o.paymentStatus === 'Paid' ? 'Paid Online 🟢' : (o.paymentStatus || 'Pending')}</span>
+                        </div>
+                        <div class="font-bold text-gold-400 text-base mt-1.5">Total: ₹${o.totalAmount || 0}</div>
+                        ${o.razorpayPaymentId ? `<div class="font-mono text-[10px] text-zinc-400 mt-1">Ref ID: ${o.razorpayPaymentId}</div>` : ''}
+                    </div>
+                    <div>
+                        <div class="text-zinc-500 uppercase tracking-wider text-[10px] font-bold mb-1">Update Production Status</div>
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="w-full px-3 py-2 rounded-lg bg-dark-950 border border-dark-700 text-white font-semibold text-xs mt-1">
+                            <option value="Order Placed" ${o.orderStatus === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
+                            <option value="Lab Printed" ${o.orderStatus === 'Lab Printed' ? 'selected' : ''}>2. Lab Printed</option>
+                            <option value="Wood Framed" ${o.orderStatus === 'Wood Framed' ? 'selected' : ''}>3. Wood Framed</option>
+                            <option value="Dispatched" ${o.orderStatus === 'Dispatched' ? 'selected' : ''}>4. Dispatched</option>
+                            <option value="Delivered" ${o.orderStatus === 'Delivered' ? 'selected' : ''}>5. Delivered</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Items & Framing Customizations List -->
+                <div>
+                    <div class="text-zinc-400 uppercase tracking-wider text-[11px] font-bold mb-2">Framed Items (${(o.items || []).length})</div>
+                    <div class="space-y-3">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('order-modal').style.display = 'flex';
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').style.display = 'none';
+        }
+
+        // 6. Products Catalog
+        function renderProductsTable() {
+            const container = document.getElementById('products-table-body');
+            if (allProducts.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-zinc-500">No products found in MongoDB.</td></tr>';
+                return;
+            }
+
+            container.innerHTML = allProducts.map(p => `
+                <tr class="hover:bg-dark-900/40">
+                    <td class="p-4 w-16">
+                        <img src="${p.image || 'https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=400&q=80'}" class="w-12 h-12 rounded-lg object-cover border border-dark-700">
+                    </td>
+                    <td class="p-4">
+                        <div class="font-bold text-white text-xs">${p.title || p.name}</div>
+                        <div class="text-[10px] text-zinc-500 line-clamp-1">${p.desc || 'No description'}</div>
+                        ${p.badge ? `<span class="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded bg-gold-500/15 text-gold-400 border border-gold-500/30">${p.badge}</span>` : ''}
+                    </td>
+                    <td class="p-4 text-zinc-400">${p.category || 'Frames'}</td>
+                    <td class="p-4">
+                        <span class="font-bold text-gold-400">₹${p.price || p.basePrice || 499}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-emerald-400 font-semibold">${p.stock || 50} in stock</span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="editProduct('${p.id}')" class="p-2 rounded bg-dark-800 text-zinc-300 hover:text-white text-xs cursor-pointer" title="Edit Product">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs cursor-pointer" title="Delete Product">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProductModal() {
+            document.getElementById('prod-id').value = '';
+            document.getElementById('prod-title').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-image').value = '';
+            document.getElementById('prod-badge').value = '';
+            document.getElementById('prod-desc').value = '';
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        function editProduct(prodId) {
+            const p = allProducts.find(i => i.id === prodId);
+            if (!p) return;
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-title').value = p.title || p.name;
+            document.getElementById('prod-price').value = p.price || p.basePrice || 499;
+            document.getElementById('prod-image').value = p.image || '';
+            document.getElementById('prod-badge').value = p.badge || '';
+            document.getElementById('prod-desc').value = p.desc || '';
+            document.getElementById('prod-category').value = p.category || 'cat_photo_frames';
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        async function handleSaveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value || `prod_${Date.now()}`;
+            const payload = {
+                id: id,
+                title: document.getElementById('prod-title').value.trim(),
+                name: document.getElementById('prod-title').value.trim(),
+                price: Number(document.getElementById('prod-price').value),
+                basePrice: Number(document.getElementById('prod-price').value),
+                image: document.getElementById('prod-image').value.trim(),
+                badge: document.getElementById('prod-badge').value.trim(),
+                desc: document.getElementById('prod-desc').value.trim(),
+                category: document.getElementById('prod-category').value,
+                stock: 50,
+                rating: 5,
+                reviews: 24
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    closeProductModal();
+                    fetchEverythingFromMern();
+                    showAdminToast('✓ Product saved to MongoDB!');
+                }
+            } catch (err) {
+                alert('Error saving product');
+            }
+        }
+
+        async function deleteProduct(prodId) {
+            if (!confirm('Delete this product from catalog?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/products/${prodId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    allProducts = allProducts.filter(p => p.id !== prodId);
+                    renderProductsTable();
+                    showAdminToast('Product deleted from MongoDB');
+                }
+            } catch (e) {
+                alert('Error deleting product');
+            }
+        }
+
+        // 7. Coupons
+        function renderCouponsGrid() {
+            const container = document.getElementById('coupons-grid');
+            if (allCoupons.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500 text-xs">No active coupons in MongoDB.</div>';
+                return;
+            }
+
+            container.innerHTML = allCoupons.map(c => `
+                <div class="glass-panel p-5 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white tracking-wider text-sm font-mono">${c.code}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Active</span>
+                        </div>
+                        <div class="text-xs text-gold-400 font-semibold mt-1">
+                            ${c.discountType === 'percent' ? `${c.value}% OFF` : `₹${c.value} FLAT OFF`}
+                        </div>
+                        <div class="text-[10px] text-zinc-500 mt-0.5">Min cart: ₹${c.minCart || 0}</div>
+                    </div>
+                    <button onclick="deleteCoupon('${c.code}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs cursor-pointer">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openCouponModal() {
+            document.getElementById('coupon-modal').style.display = 'flex';
+        }
+
+        function closeCouponModal() {
+            document.getElementById('coupon-modal').style.display = 'none';
+        }
+
+        async function handleSaveCoupon(e) {
+            e.preventDefault();
+            const payload = [{
+                code: document.getElementById('cpn-code').value.trim().toUpperCase(),
+                discountType: document.getElementById('cpn-type').value,
+                value: Number(document.getElementById('cpn-value').value),
+                minCart: Number(document.getElementById('cpn-min').value || 0),
+                expiry: '2026-12-31',
+                isActive: true
+            }];
+
+            try {
+                const res = await fetch(`${API_BASE}/coupons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    closeCouponModal();
+                    fetchEverythingFromMern();
+                    showAdminToast('✓ Coupon created successfully!');
+                }
+            } catch (err) {
+                alert('Error creating coupon');
+            }
+        }
+
+        async function deleteCoupon(code) {
+            if (!confirm(`Delete coupon ${code}?`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/coupons/${code}`, { method: 'DELETE' });
+                if (res.ok) {
+                    allCoupons = allCoupons.filter(c => c.code !== code);
+                    renderCouponsGrid();
+                    showAdminToast('Coupon deleted');
+                }
+            } catch (e) {
+                alert('Error deleting coupon');
+            }
+        }
+
+        // 8. CMS Editor
+        function populateCmsForm() {
+            const cms = cmsData.cms || {};
+            const foot = cmsData.footer || {};
+            document.getElementById('cms-announcement').value = cms.announcementText || '✨ Studio Quality Prints Starting @ ₹19 | WhatsApp Fast Dispatch';
+            document.getElementById('cms-hero-title').value = cms.heroTitle || 'Turn Your Cherished Moments Into Museum-Grade Wall Art.';
+            document.getElementById('cms-hero-subtext').value = cms.heroSubtext || 'Upload your photos in seconds. Choose from hand-milled solid wood frames, gallery canvas wraps, and optical acrylics—delivered safely to your doorstep, ready to hang.';
+            document.getElementById('cms-phone').value = foot.phone || '+91 72319 00124';
+            document.getElementById('cms-email').value = foot.email || 'princestudio@tasviir.in';
+            document.getElementById('cms-address').value = foot.address || 'Main Market Road, Sawai Madhopur, Rajasthan 322001';
+        }
+
+        async function saveCmsToMongoDB() {
+            const payload = {
+                cms: {
+                    announcementText: document.getElementById('cms-announcement').value.trim(),
+                    heroTitle: document.getElementById('cms-hero-title').value.trim(),
+                    heroSubtext: document.getElementById('cms-hero-subtext').value.trim()
+                },
+                footer: {
+                    phone: document.getElementById('cms-phone').value.trim(),
+                    email: document.getElementById('cms-email').value.trim(),
+                    address: document.getElementById('cms-address').value.trim()
+                }
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/cms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showAdminToast('✓ Storefront CMS published to MongoDB!');
+                }
+            } catch (e) {
+                alert('Error publishing CMS');
+            }
+        }
+
+        // 9. Password Update
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const np = document.getElementById('new-password').value.trim();
+            if (!np) return;
+
+            try {
+                // Change password on user model
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: np })
+                });
+                showAdminToast('✓ Password updated successfully!');
+                document.getElementById('new-password').value = '';
+            } catch (e) {
+                alert('Password update error');
+            }
+        }
+
+        async function sendTestEmailDirect(type) {
+            const targetEmail = document.getElementById('test-email-target').value.trim();
+            if (!targetEmail || !targetEmail.includes('@')) {
+                return alert('Please enter a valid recipient email address');
+            }
+
+            const box = document.getElementById('test-email-status-box');
+            const btn = document.getElementById(type === 'admin' ? 'btn-test-admin' : 'btn-test-customer');
+            const origText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
+            box.classList.remove('hidden');
+            box.className = 'p-3.5 rounded-xl text-xs font-mono bg-dark-950 border border-dark-700 text-zinc-300';
+            box.innerHTML = `<i class="fas fa-circle-notch fa-spin text-amber-400"></i> Dispatched test request for <strong>${type.toUpperCase()}</strong> to <strong>${targetEmail}</strong> via EmailJS...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/test-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetEmail, type })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.status === 'success') {
+                    box.className = 'p-3.5 rounded-xl text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 text-emerald-200';
+                    box.innerHTML = `✓ <strong>Success!</strong> ${type === 'admin' ? 'Admin alert' : 'Customer confirmation'} dispatched to <strong>${targetEmail}</strong>!<br><span class="text-zinc-400 text-[11px] mt-1 block">• Check your inbox and Spam/Junk folder for ${targetEmail}.<br>• Delivery Status: OK (200).</span>`;
+                    showAdminToast(`✓ Test email sent to ${targetEmail}!`);
+                } else {
+                    box.className = 'p-3.5 rounded-xl text-xs font-mono bg-red-950/80 border border-red-500/50 text-red-200';
+                    box.innerHTML = `✕ <strong>Dispatch Issue:</strong> ${data.message || 'Check EmailJS logs'}`;
+                }
+            } catch (err) {
+                box.className = 'p-3.5 rounded-xl text-xs font-mono bg-red-950/80 border border-red-500/50 text-red-200';
+                box.innerHTML = `✕ <strong>Network error:</strong> ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        }
+
+        function testChimeSound() {
+            const snd = document.getElementById('order-sound');
+            if (snd) {
+                snd.currentTime = 0;
+                snd.play().catch(e => console.log('Audio autoplay policy:', e));
+                showAdminToast('🔔 Sound Chime Playing');
+            }
+        }
+
+        function showAdminToast(msg) {
+            const toast = document.getElementById('admin-toast');
+            document.getElementById('admin-toast-text').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

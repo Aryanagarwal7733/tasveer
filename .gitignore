@@ -1,0 +1,14 @@
+db.json
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+node_modules/
+*.log
+logs/
+recovered_user_photos/
+.vercel
+.DS_Store
+Thumbs.db
+

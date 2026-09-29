@@ -1,0 +1,7 @@
+db.json
+__pycache__
+*.pyc
+*.pyo
+node_modules
+*.log
+.env

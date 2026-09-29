@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasveer - 3 Visual Themes Comparison</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: #f8fafc; padding-bottom: 60px; }
+
+        /* Top Theme Switcher Bar */
+        .theme-selector-bar {
+            position: sticky; top: 0; z-index: 9999;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid #334155;
+            padding: 14px 20px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+        }
+        .selector-title { font-size: 1.1rem; font-weight: 800; color: #f59e0b; display: flex; align-items: center; gap: 8px; }
+        .theme-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .theme-tab-btn {
+            padding: 10px 18px; border-radius: 30px;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 700;
+            border: 1px solid #475569; background: #1e293b; color: #cbd5e1;
+            cursor: pointer; transition: all 0.25s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .theme-tab-btn:hover { border-color: #f59e0b; color: #fff; }
+        .theme-tab-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000; font-weight: 900; border-color: #f59e0b;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Container for live mockups */
+        .mockup-viewport {
+            max-width: 1200px; margin: 30px auto;
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+        }
+
+        /* ==========================================================================
+           THEME 1: MODERN STUDIO MINIMAL LUXE (APPLE / FRAMEBRIDGE)
+           ========================================================================== */
+        .theme-1-wrap {
+            background: #faf8f5;
+            color: #18181b;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .t1-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e7e5e4;
+            padding: 16px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .t1-brand { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: #18181b; letter-spacing: -0.5px; }
+        .t1-brand span { color: #d97706; font-size: 0.85rem; font-family: 'Plus Jakarta Sans', sans-serif; display: block; font-weight: 600; letter-spacing: 0.5px; }
+        .t1-nav { display: flex; gap: 20px; font-size: 0.9rem; font-weight: 600; color: #52525b; }
+        .t1-hero {
+            padding: 50px 30px;
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;
+            background: radial-gradient(circle at top left, #fff7ed 0%, #faf8f5 60%);
+        }
+        .t1-tag { font-size: 0.78rem; font-weight: 800; color: #b45309; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; display: inline-block; background: rgba(217, 119, 6, 0.1); padding: 4px 12px; border-radius: 20px; }
+        .t1-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 800; line-height: 1.15; color: #18181b; margin-bottom: 16px; }
+        .t1-title span { color: #b45309; font-style: italic; }
+        .t1-desc { font-size: 1rem; color: #71717a; line-height: 1.6; margin-bottom: 24px; }
+        .t1-btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #18181b; color: #fff; padding: 12px 28px; border-radius: 30px;
+            font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: 0.2s ease;
+        }
+        .t1-btn-primary:hover { background: #d97706; transform: translateY(-2px); }
+        .t1-frame {
+            border: 8px solid #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            background: #18181b;
+        }
+        .t1-frame img { width: 100%; height: 360px; object-fit: cover; display: block; }
+        .t1-catalog { padding: 40px 30px; }
+        .t1-sec-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 800; color: #18181b; margin-bottom: 20px; }
+        .t1-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .t1-card {
+            background: #ffffff; border: 1px solid #f4f4f5; border-radius: 12px;
+            overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+        }
+        .t1-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
+        .t1-card-img { width: 100%; height: 200px; object-fit: cover; }
+        .t1-card-body { padding: 14px; }
+        .t1-card-cat { font-size: 0.7rem; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 4px; }
+        .t1-card-title { font-size: 0.95rem; font-weight: 700; color: #18181b; margin-bottom: 8px; line-height: 1.3; }
+        .t1-card-price { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+        .t1-price { font-size: 1.15rem; font-weight: 900; color: #18181b; }
+        .t1-old-price { font-size: 0.8rem; color: #a1a1aa; text-decoration: line-through; }
+        .t1-card-btns { display: flex; gap: 6px; }
+        .t1-btn-cart { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #e4e4e7; background: #fafafa; font-size: 0.78rem; font-weight: 700; color: #27272a; cursor: pointer; }
+        .t1-btn-buy { flex: 1.2; padding: 8px; border-radius: 6px; border: none; background: #18181b; color: #fff; font-size: 0.78rem; font-weight: 800; cursor: pointer; }
+
+        /* ==========================================================================
+           THEME 2: ROYAL HERITAGE ART GALLERY (SABYASACHI / TEAK ARTISANAL)
+           ========================================================================== */
+        .theme-2-wrap {
+            background: #1c1510;
+            color: #fef3c7;
+            font-family: 'Cinzel', serif;
+        }
+        .t2-header {
+            background: #2b1d14;
+            border-bottom: 2px solid #78350f;
+            padding: 18px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .t2-brand { font-family: 'Cinzel', serif; font-size: 1.7rem; font-weight: 900; color: #fbbf24; letter-spacing: 2px; }
+        .t2-brand span { color: #d97706; font-size: 0.75rem; letter-spacing: 3px; display: block; }
+        .t2-hero {
+            padding: 60px 30px;
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;
+            background: radial-gradient(circle at center, #3b2314 0%, #1c1510 100%);
+            border-bottom: 2px solid #78350f;
+        }
+        .t2-title { font-family: 'Cinzel', serif; font-size: 2.6rem; font-weight: 900; color: #fde68a; line-height: 1.2; margin-bottom: 16px; letter-spacing: 1px; }
+        .t2-title span { color: #f59e0b; }
+        .t2-desc { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; color: #d6d3d1; line-height: 1.6; margin-bottom: 24px; }
+        .t2-btn-primary {
+            background: linear-gradient(135deg, #d97706, #92400e);
+            color: #ffffff; padding: 12px 30px; border-radius: 4px;
+            border: 1px solid #f59e0b; font-family: 'Cinzel', serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(217, 119, 6, 0.4);
+        }
+        .t2-frame {
+            border: 10px solid #78350f;
+            padding: 8px;
+            background: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+        }
+        .t2-frame img { width: 100%; height: 360px; object-fit: cover; display: block; }
+        .t2-catalog { padding: 40px 30px; }
+        .t2-sec-title { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 900; color: #fbbf24; margin-bottom: 20px; letter-spacing: 1px; text-align: center; }
+        .t2-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .t2-card {
+            background: #2b1d14; border: 1px solid #78350f; border-radius: 6px;
+            padding: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .t2-card-img { width: 100%; height: 190px; object-fit: cover; border: 1px solid #78350f; }
+        .t2-card-body { padding: 12px 6px; }
+        .t2-card-title { font-family: 'Cinzel', serif; font-size: 0.92rem; font-weight: 800; color: #fef08a; margin-bottom: 6px; }
+        .t2-price { font-size: 1.15rem; font-weight: 900; color: #f59e0b; }
+        .t2-card-btns { display: flex; gap: 6px; margin-top: 10px; }
+        .t2-btn-cart { flex: 1; padding: 7px; background: #1c1510; border: 1px solid #78350f; color: #fed7aa; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+        .t2-btn-buy { flex: 1.2; padding: 7px; background: #d97706; border: none; color: #fff; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
+
+        /* ==========================================================================
+           THEME 3: MODERN E-COMMERCE POWER (MYNTRA / NYKAA LUXE STYLE)
+           ========================================================================== */
+        .theme-3-wrap {
+            background: #ffffff;
+            color: #0f172a;
+            font-family: 'Inter', sans-serif;
+        }
+        .t3-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 14px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .t3-brand { font-size: 1.6rem; font-weight: 900; color: #ea580c; letter-spacing: -0.5px; }
+        .t3-brand span { color: #64748b; font-size: 0.8rem; font-weight: 500; }
+        .t3-hero {
+            padding: 40px 30px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+        .t3-badge-deal { background: #ea580c; color: #fff; font-size: 0.75rem; font-weight: 900; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        .t3-title { font-size: 2.6rem; font-weight: 900; color: #0f172a; line-height: 1.15; margin-bottom: 14px; }
+        .t3-desc { font-size: 0.95rem; color: #475569; margin-bottom: 20px; }
+        .t3-btn-primary {
+            background: #ea580c; color: #ffffff; padding: 12px 28px; border-radius: 8px;
+            font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);
+        }
+        .t3-frame {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        .t3-frame img { width: 100%; height: 340px; object-fit: cover; display: block; }
+        .t3-catalog { padding: 40px 30px; }
+        .t3-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .t3-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;
+            overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: relative;
+        }
+        .t3-discount-tag { position: absolute; top: 10px; left: 10px; background: #16a34a; color: #fff; font-size: 0.7rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+        .t3-card-img { width: 100%; height: 200px; object-fit: cover; }
+        .t3-card-body { padding: 12px; }
+        .t3-card-title { font-size: 0.88rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .t3-price-box { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+        .t3-price { font-size: 1.15rem; font-weight: 900; color: #0f172a; }
+        .t3-old-price { font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; }
+        .t3-off { font-size: 0.75rem; font-weight: 800; color: #ea580c; }
+        .t3-card-btns { display: flex; gap: 6px; }
+        .t3-btn-cart { flex: 1; padding: 7px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; font-size: 0.78rem; border-radius: 4px; cursor: pointer; }
+        .t3-btn-buy { flex: 1.2; padding: 7px; border: none; background: #ea580c; color: #fff; font-weight: 800; font-size: 0.78rem; border-radius: 4px; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .t1-hero, .t2-hero, .t3-hero { grid-template-columns: 1fr; padding: 24px 16px; }
+            .t1-grid, .t2-grid, .t3-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .t1-title, .t2-title, .t3-title { font-size: 1.9rem; }
+            .t1-frame img, .t2-frame img, .t3-frame img { height: 240px; }
+            .mockup-viewport { margin: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Live Theme Switcher Navigation -->
+    <div class="theme-selector-bar">
+        <div class="selector-title">
+            <i class="fas fa-palette"></i> Choose Live Template Preview:
+        </div>
+        <div class="theme-tabs">
+            <button class="theme-tab-btn active" onclick="switchThemePreview(1, this)">
+                <i class="fas fa-gem"></i> Theme 1: Minimal Luxe (Apple / Framebridge)
+            </button>
+            <button class="theme-tab-btn" onclick="switchThemePreview(2, this)">
+                <i class="fas fa-crown"></i> Theme 2: Royal Heritage (Sabyasachi / Teak)
+            </button>
+            <button class="theme-tab-btn" onclick="switchThemePreview(3, this)">
+                <i class="fas fa-bolt"></i> Theme 3: Modern E-Commerce (Myntra Style)
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Mockup Viewport -->
+    <div class="mockup-viewport">
+
+        <!-- ==================== THEME 1 MOCKUP ==================== -->
+        <div id="theme-view-1" class="theme-1-wrap">
+            <header class="t1-header">
+                <div class="t1-brand">
+                    TASVEER
+                    <span>BY PRINCE STUDIO</span>
+                </div>
+                <div class="t1-nav">
+                    <span>Photo Frames</span>
+                    <span>Canvas Prints</span>
+                    <span>Collage</span>
+                    <span>Gallery Walls</span>
+                </div>
+                <div>
+                    <button class="t1-btn-primary" style="padding:8px 18px; font-size:0.8rem;"><i class="fas fa-shopping-bag"></i> Cart (0)</button>
+                </div>
+            </header>
+
+            <section class="t1-hero">
+                <div>
+                    <span class="t1-tag">Museum Grade Framing</span>
+                    <h1 class="t1-title">Crafting Royal <span>Gallery Art</span> For Your Modern Walls</h1>
+                    <p class="t1-desc">Upload your personal photographs, select solid Italian teak wood moldings with acid-free white matting, and enjoy instant express delivery.</p>
+                    <button class="t1-btn-primary"><i class="fas fa-sparkles"></i> Explore Framing Collection</button>
+                </div>
+                <div class="t1-frame">
+                    <img src="hero-poster.png" onerror="this.src='logo.png'" alt="Frame Mockup">
+                </div>
+            </section>
+
+            <section class="t1-catalog">
+                <h2 class="t1-sec-title">Featured Framing Collections</h2>
+                <div class="t1-grid">
+                    <div class="t1-card">
+                        <img src="hero-poster.png" class="t1-card-img">
+                        <div class="t1-card-body">
+                            <div class="t1-card-cat">Wooden Wall Frame</div>
+                            <div class="t1-card-title">Classic Italian Teak Frame (12x18")</div>
+                            <div class="t1-card-price">
+                                <span class="t1-price">₹499</span>
+                                <span class="t1-old-price">₹899</span>
+                            </div>
+                            <div class="t1-card-btns">
+                                <button class="t1-btn-cart"><i class="fas fa-shopping-cart"></i> Cart</button>
+                                <button class="t1-btn-buy"><i class="fas fa-bolt"></i> Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t1-card">
+                        <img src="hero-poster.png" class="t1-card-img">
+                        <div class="t1-card-body">
+                            <div class="t1-card-cat">Collage Frame</div>
+                            <div class="t1-card-title">Family Memories 9-in-1 Grid Frame</div>
+                            <div class="t1-card-price">
+                                <span class="t1-price">₹899</span>
+                                <span class="t1-old-price">₹1499</span>
+                            </div>
+                            <div class="t1-card-btns">
+                                <button class="t1-btn-cart"><i class="fas fa-shopping-cart"></i> Cart</button>
+                                <button class="t1-btn-buy"><i class="fas fa-bolt"></i> Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t1-card">
+                        <img src="hero-poster.png" class="t1-card-img">
+                        <div class="t1-card-body">
+                            <div class="t1-card-cat">Canvas Art</div>
+                            <div class="t1-card-title">Living Room Gallery Set of 3</div>
+                            <div class="t1-card-price">
+                                <span class="t1-price">₹1299</span>
+                                <span class="t1-old-price">₹1999</span>
+                            </div>
+                            <div class="t1-card-btns">
+                                <button class="t1-btn-cart"><i class="fas fa-shopping-cart"></i> Cart</button>
+                                <button class="t1-btn-buy"><i class="fas fa-bolt"></i> Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t1-card">
+                        <img src="hero-poster.png" class="t1-card-img">
+                        <div class="t1-card-body">
+                            <div class="t1-card-cat">Acrylic Floating</div>
+                            <div class="t1-card-title">Ultra HD Acrylic Standoff Frame</div>
+                            <div class="t1-card-price">
+                                <span class="t1-price">₹699</span>
+                                <span class="t1-old-price">₹1199</span>
+                            </div>
+                            <div class="t1-card-btns">
+                                <button class="t1-btn-cart"><i class="fas fa-shopping-cart"></i> Cart</button>
+                                <button class="t1-btn-buy"><i class="fas fa-bolt"></i> Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== THEME 2 MOCKUP ==================== -->
+        <div id="theme-view-2" class="theme-2-wrap" style="display:none;">
+            <header class="t2-header">
+                <div class="t2-brand">
+                    TASVEER
+                    <span>ROYAL ART STUDIO</span>
+                </div>
+                <div class="t2-nav" style="display:flex; gap:18px; font-size:0.85rem; color:#fde68a;">
+                    <span>HERITAGE TEAK</span>
+                    <span>ROYAL GOLD</span>
+                    <span>MUSEUM MATTING</span>
+                </div>
+                <div>
+                    <button class="t2-btn-primary" style="padding:8px 18px;"><i class="fas fa-crown"></i> VIP DESK</button>
+                </div>
+            </header>
+
+            <section class="t2-hero">
+                <div>
+                    <div style="color:#f59e0b; font-size:0.8rem; letter-spacing:3px; margin-bottom:10px;">ESTABLISHED 2010 • SAWAI MADHOPUR</div>
+                    <h1 class="t2-title">ROYAL HANDCRAFTED <span>WOODEN ART</span> FRAMING</h1>
+                    <p class="t2-desc">Preserve your most precious moments in 100% genuine aged teak wood moldings, crafted by master artisans with museum-grade archival protection.</p>
+                    <button class="t2-btn-primary"><i class="fas fa-award"></i> VIEW ROYAL CATALOG</button>
+                </div>
+                <div class="t2-frame">
+                    <img src="hero-poster.png" onerror="this.src='logo.png'" alt="Royal Frame">
+                </div>
+            </section>
+
+            <section class="t2-catalog">
+                <h2 class="t2-sec-title">THE IMPERIAL COLLECTION</h2>
+                <div class="t2-grid">
+                    <div class="t2-card">
+                        <img src="hero-poster.png" class="t2-card-img">
+                        <div class="t2-card-body">
+                            <div class="t2-card-title">ROYAL WALNUT FRAME</div>
+                            <div class="t2-price">₹499 <span style="font-size:0.75rem; color:#a8a29e; text-decoration:line-through;">₹899</span></div>
+                            <div class="t2-card-btns">
+                                <button class="t2-btn-cart">CART</button>
+                                <button class="t2-btn-buy">BUY NOW</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t2-card">
+                        <img src="hero-poster.png" class="t2-card-img">
+                        <div class="t2-card-body">
+                            <div class="t2-card-title">IMPERIAL GOLD BORDER</div>
+                            <div class="t2-price">₹899 <span style="font-size:0.75rem; color:#a8a29e; text-decoration:line-through;">₹1499</span></div>
+                            <div class="t2-card-btns">
+                                <button class="t2-btn-cart">CART</button>
+                                <button class="t2-btn-buy">BUY NOW</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t2-card">
+                        <img src="hero-poster.png" class="t2-card-img">
+                        <div class="t2-card-body">
+                            <div class="t2-card-title">PALACE GALLERY SET</div>
+                            <div class="t2-price">₹1299 <span style="font-size:0.75rem; color:#a8a29e; text-decoration:line-through;">₹1999</span></div>
+                            <div class="t2-card-btns">
+                                <button class="t2-btn-cart">CART</button>
+                                <button class="t2-btn-buy">BUY NOW</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t2-card">
+                        <img src="hero-poster.png" class="t2-card-img">
+                        <div class="t2-card-body">
+                            <div class="t2-card-title">HERITAGE TEAK 24X36"</div>
+                            <div class="t2-price">₹1799 <span style="font-size:0.75rem; color:#a8a29e; text-decoration:line-through;">₹2499</span></div>
+                            <div class="t2-card-btns">
+                                <button class="t2-btn-cart">CART</button>
+                                <button class="t2-btn-buy">BUY NOW</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== THEME 3 MOCKUP ==================== -->
+        <div id="theme-view-3" class="theme-3-wrap" style="display:none;">
+            <header class="t3-header">
+                <div class="t3-brand">
+                    TASVEER.in
+                    <span>Studio E-Shop</span>
+                </div>
+                <div style="display:flex; gap:15px; font-weight:700; font-size:0.88rem;">
+                    <span>🔥 Best Deals</span>
+                    <span>Top Rated</span>
+                    <span>Express 24h</span>
+                </div>
+                <div>
+                    <button class="t3-btn-primary" style="padding:8px 16px; font-size:0.8rem;"><i class="fas fa-bolt"></i> Offers</button>
+                </div>
+            </header>
+
+            <section class="t3-hero">
+                <div>
+                    <span class="t3-badge-deal">⚡ MEGA SALE • FLAT 45% OFF</span>
+                    <h1 class="t3-title">Custom Frames & Wall Decor Online</h1>
+                    <p class="t3-desc">India's easiest custom photo framing portal. Upload from mobile, select size, pay via UPI with instant delivery tracking.</p>
+                    <button class="t3-btn-primary"><i class="fas fa-shopping-bag"></i> SHOP SALE NOW</button>
+                </div>
+                <div class="t3-frame">
+                    <img src="hero-poster.png" onerror="this.src='logo.png'" alt="Ecom Banner">
+                </div>
+            </section>
+
+            <section class="t3-catalog">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 style="font-size:1.4rem; font-weight:900; color:#0f172a;">Best Selling Frames</h2>
+                    <span style="font-size:0.85rem; font-weight:800; color:#ea580c; cursor:pointer;">View All (24) →</span>
+                </div>
+                <div class="t3-grid">
+                    <div class="t3-card">
+                        <span class="t3-discount-tag">45% OFF</span>
+                        <img src="hero-poster.png" class="t3-card-img">
+                        <div class="t3-card-body">
+                            <div class="t3-card-title">Classic Black Wooden Frame</div>
+                            <div class="t3-price-box">
+                                <span class="t3-price">₹499</span>
+                                <span class="t3-old-price">₹899</span>
+                                <span class="t3-off">(45% OFF)</span>
+                            </div>
+                            <div class="t3-card-btns">
+                                <button class="t3-btn-cart">Cart</button>
+                                <button class="t3-btn-buy">Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t3-card">
+                        <span class="t3-discount-tag">40% OFF</span>
+                        <img src="hero-poster.png" class="t3-card-img">
+                        <div class="t3-card-body">
+                            <div class="t3-card-title">9-Grid Family Collage Frame</div>
+                            <div class="t3-price-box">
+                                <span class="t3-price">₹899</span>
+                                <span class="t3-old-price">₹1499</span>
+                                <span class="t3-off">(40% OFF)</span>
+                            </div>
+                            <div class="t3-card-btns">
+                                <button class="t3-btn-cart">Cart</button>
+                                <button class="t3-btn-buy">Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t3-card">
+                        <span class="t3-discount-tag">35% OFF</span>
+                        <img src="hero-poster.png" class="t3-card-img">
+                        <div class="t3-card-body">
+                            <div class="t3-card-title">Living Room Canvas Trio</div>
+                            <div class="t3-price-box">
+                                <span class="t3-price">₹1299</span>
+                                <span class="t3-old-price">₹1999</span>
+                                <span class="t3-off">(35% OFF)</span>
+                            </div>
+                            <div class="t3-card-btns">
+                                <button class="t3-btn-cart">Cart</button>
+                                <button class="t3-btn-buy">Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="t3-card">
+                        <span class="t3-discount-tag">42% OFF</span>
+                        <img src="hero-poster.png" class="t3-card-img">
+                        <div class="t3-card-body">
+                            <div class="t3-card-title">HD Acrylic Floating Frame</div>
+                            <div class="t3-price-box">
+                                <span class="t3-price">₹699</span>
+                                <span class="t3-old-price">₹1199</span>
+                                <span class="t3-off">(42% OFF)</span>
+                            </div>
+                            <div class="t3-card-btns">
+                                <button class="t3-btn-cart">Cart</button>
+                                <button class="t3-btn-buy">Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+    <script>
+        function switchThemePreview(themeNumber, btn) {
+            document.querySelectorAll('.theme-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            document.getElementById('theme-view-1').style.display = 'none';
+            document.getElementById('theme-view-2').style.display = 'none';
+            document.getElementById('theme-view-3').style.display = 'none';
+
+            const activeView = document.getElementById('theme-view-' + themeNumber);
+            if (activeView) activeView.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
