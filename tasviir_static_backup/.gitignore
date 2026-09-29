@@ -1,9 +1,0 @@
-db.json
-__pycache__/
-*.pyc
-*.pyo
-.env
-node_modules/
-*.log
-
-.vercel

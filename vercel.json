@@ -1,41 +1,69 @@
 {
-  "version": 2,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "express"
+    },
+    "client": {
+      "root": "client",
+      "framework": "vite"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api",
-      "destination": "/api/index.js"
-    },
-    {
       "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "destination": {
+        "service": "app"
+      }
     },
     {
-      "source": "/admin",
-      "destination": "/admin.html"
+      "source": "/api",
+      "destination": {
+        "service": "app"
+      }
     },
     {
-      "source": "/admin/(.*)",
-      "destination": "/admin.html"
+      "source": "/admin(.*)",
+      "destination": {
+        "service": "app"
+      }
     },
     {
       "source": "/admin-login",
-      "destination": "/admin-login.html"
+      "destination": {
+        "service": "app"
+      }
     },
     {
-      "source": "/storefront",
-      "destination": "/index.html"
+      "source": "/storefront(.*)",
+      "destination": {
+        "service": "app"
+      }
     },
     {
-      "source": "/legacy",
-      "destination": "/index.html"
+      "source": "/legacy(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
+      "source": "/react/(.*)",
+      "destination": {
+        "service": "client"
+      }
     },
     {
       "source": "/react",
-      "destination": "/react-storefront.html"
+      "destination": {
+        "service": "client"
+      }
     },
     {
-      "source": "/react-storefront",
-      "destination": "/react-storefront.html"
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
     }
   ],
   "headers": [

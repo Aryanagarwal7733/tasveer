@@ -5,10 +5,12 @@ __pycache__/
 .env
 .env.*
 node_modules/
+client/node_modules/
 *.log
 logs/
 recovered_user_photos/
 .vercel
 .DS_Store
 Thumbs.db
-
+tasviir_static_backup/
+tasviir/
